@@ -1,0 +1,6 @@
+emacs.font: Inconsolata-10
+emacs.menuBar: off
+emacs.toolBar: off
+emacs.verticalScrollBars: off
+emacs.horizontalScrollbars: off
+emacs.minibuffer: on
