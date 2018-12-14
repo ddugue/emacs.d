@@ -47,7 +47,7 @@
 (defmacro tron/message! (unicode color msg &rest args)
   "Small utility to create a message with a unicode colored at start"
   (let ((color-code (cond ((eql :red color) "\e[31m")
-                          ((eql :green color) "\e[21m"))))
+                          ((eql :green color) "\e[32m"))))
     `(message ,(concat "["
                        (when noninteractive color-code)
                        unicode
@@ -61,7 +61,7 @@
   (memq feature tron-features))
 
 ;; Utilities to work with layers
-(defun tron/layer-file (layer file)
+(defun tron/layer-file (layer &optional file)
   "Return a layer file based on the layer and the file"
   (let ((layer-name (or (and (symbolp layer) (symbol-name layer)) layer)))
     (concat user-emacs-directory "layers/" layer-name "/" file)))
@@ -74,7 +74,8 @@
     (if (not (file-exists-p layer-file))
         (tron/message! "\u2717" :red "Could not compile %s (%s not found)" layer layer-file)
         (let ((inhibit-message t))
-            (org-babel-tangle-file layer-file))
+          (org-babel-tangle-file layer-file))
+          ;; (unless (getenv "DEBUG") (byte-recompile-directory layer nil)))
         (tron/message! "\u2714" :green "Compiled %s" layer))))
 
 ;; Install a layer based on its .el or .elc file
