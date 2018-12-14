@@ -41,14 +41,17 @@
        p2
        )
 
-(defun compile ()
+;; Scripting commands, can be run straight from command line
+(defun compile (&optional layer)
   "Compile layers to make them ready for installation"
+  (interactive "SLayer Name:")
   (message "Compiling layers...")
-  (mapcar 'tron/compile-layer tron-layers))
+  (mapcar 'tron/compile-layer (or (when layer `(,layer)) tron-layers)))
 
-(defun install ()
+(defun install (&optional layer)
   "Install and update packages to latest version"
+  (interactive "SLayer Name:")
   (message "Bootstrapping Straight.el...")
   (tron/bootstrap-straight)
   (message "Installing layers...")
-  (mapcar 'tron/install-layer tron-layers))
+  (mapcar 'tron/install-layer (or (when layer `(,layer)) tron-layers)))

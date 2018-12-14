@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
 
 set -e
-EMACS_USER_DIRECTORY=/home/ddugue/new-emacs emacs -q -l init.el --batch --execute "(install)"
+if [ $# -eq 0 ]
+  then
+    emacs -q -l init.el --batch --execute "(install)"
+else
+    emacs -q -l init.el --batch --execute "(install '$1)"
+fi

@@ -59,14 +59,22 @@
 (defun tron/compile-layer (layer)
   "Function to compile a layer org file into the different el files"
   (require 'org)
-  (let ((inhibit-message t))
-    (org-babel-tangle-file (tron/layer-file layer "layer.org")))
-  (message "[\e[32m\u2714\e[0m] Compiled %s" layer))
+  (let ((layer-file (tron/layer-file layer "layer.org")))
+    (if (not (file-exists-p layer-file))
+        (message "[\e[31m\u2717\e[0m] Could not compile %s (%s not found)" layer layer-file)
+        (let ((inhibit-message t))
+            (org-babel-tangle-file layer-file))
+          (message "[\e[32m\u2714\e[0m] Compiled %s" layer))))
 
 (defun tron/install-layer (layer)
   "Function to install a layer"
-  (let ((inhibit-message t))
-    (load (tron/layer-file layer "install.el")))
-  (message "[\e[32m\u2714\e[0m] Installed %s" layer))
+  (let* ((install-file (tron/layer-file layer "install"))
+         (el-file (concat install-file ".el"))
+         (elc-file (concat install-file ".elc")))
+    (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
+        (message "[\e[31m\u2717\e[0m] Could not install %s (%s not found)" layer el-file)
+      (let ((inhibit-message t))
+        (load install-file))
+      (message "[\e[32m\u2714\e[0m] Installed %s" layer))))
 
 (provide 'tron-packages)
