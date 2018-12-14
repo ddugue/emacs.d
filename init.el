@@ -34,28 +34,21 @@
 (require 'tron-packages (emacs-path "packages"))
 
 (tron! :layers
-       test        ;; Feature that is a test
-       bam
-       boo
-       nil
+       core        ;; Feature that is a test
 
        :features
        p1          ;; Package P1
        p2
        )
 
-(progn
-(message "Packages: %s" tron-packages)
-(message "Features: %s" tron-features)
-(message "Has P1 %s" (tron/has-feature-p 'p1))
-(message "Has P3 %s" (tron/has-feature-p 'p3))
-)
-
 (defun compile ()
   "Compile layers to make them ready for installation"
-  )
+  (message "Compiling layers...")
+  (mapcar 'tron/compile-layer tron-layers))
 
 (defun install ()
   "Install and update packages to latest version"
   (message "Bootstrapping Straight.el...")
-  (tron/bootstrap-straight))
+  (tron/bootstrap-straight)
+  (message "Installing layers...")
+  (mapcar 'tron/install-layer tron-layers))

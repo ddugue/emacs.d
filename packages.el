@@ -44,9 +44,29 @@
 
 (defalias 'tron! (quote tron/features))
 
-;; Utility
+;; Utility to determine wether a certain feature is enabled or not
 (defun tron/has-feature-p (feature)
   "Return non-nil if feature is installed"
   (memq feature tron-features))
+
+;; Utilities to work with layers
+(defun tron/layer-file (layer file)
+  "Return a layer file based on the layer and the file"
+  (let ((layer-name (or (and (symbolp layer) (symbol-name layer)) layer)))
+    (concat user-emacs-directory "layers/" layer-name "/" file)))
+
+;; Compile a layer .org files into its .el files
+(defun tron/compile-layer (layer)
+  "Function to compile a layer org file into the different el files"
+  (require 'org)
+  (let ((inhibit-message t))
+    (org-babel-tangle-file (tron/layer-file layer "layer.org")))
+  (message "[\e[32m\u2714\e[0m] Compiled %s" layer))
+
+(defun tron/install-layer (layer)
+  "Function to install a layer"
+  (let ((inhibit-message t))
+    (load (tron/layer-file layer "install.el")))
+  (message "[\e[32m\u2714\e[0m] Installed %s" layer))
 
 (provide 'tron-packages)

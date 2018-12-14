@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 set -e
-EMACS_USER_DIRECTORY=/home/ddugue/new-emacs emacs -q -l compile.el --batch
+EMACS_USER_DIRECTORY=/home/ddugue/new-emacs emacs -q -l init.el --batch --execute "(compile)"
