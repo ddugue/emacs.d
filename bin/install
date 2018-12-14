@@ -3,7 +3,7 @@
 set -e
 if [ $# -eq 0 ]
   then
-    emacs -q -l init.el --batch --execute "(install)"
+    emacs -q -l init.el --batch --execute "(tron/install)"
 else
-    emacs -q -l init.el --batch --execute "(install '$1)"
+    emacs -q -l init.el --batch --execute "(tron/install '$1)"
 fi

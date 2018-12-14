@@ -44,6 +44,17 @@
 
 (defalias 'tron! (quote tron/features))
 
+(defmacro tron/message! (unicode color msg &rest args)
+  "Small utility to create a message with a unicode colored at start"
+  (let ((color-code (cond ((eql :red color) "\e[31m")
+                          ((eql :green color) "\e[21m"))))
+    `(message ,(concat "["
+                       (when noninteractive color-code)
+                       unicode
+                       (when noninteractive "\e[0m")
+                       "] "
+                       msg) ,@args)))
+
 ;; Utility to determine wether a certain feature is enabled or not
 (defun tron/has-feature-p (feature)
   "Return non-nil if feature is installed"
@@ -61,20 +72,21 @@
   (require 'org)
   (let ((layer-file (tron/layer-file layer "layer.org")))
     (if (not (file-exists-p layer-file))
-        (message "[\e[31m\u2717\e[0m] Could not compile %s (%s not found)" layer layer-file)
+        (tron/message! "\u2717" :red "Could not compile %s (%s not found)" layer layer-file)
         (let ((inhibit-message t))
             (org-babel-tangle-file layer-file))
-          (message "[\e[32m\u2714\e[0m] Compiled %s" layer))))
+        (tron/message! "\u2714" :red "Compiled %s" layer))))
 
+;; Install a layer based on its .el or .elc file
 (defun tron/install-layer (layer)
   "Function to install a layer"
   (let* ((install-file (tron/layer-file layer "install"))
          (el-file (concat install-file ".el"))
          (elc-file (concat install-file ".elc")))
     (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
-        (message "[\e[31m\u2717\e[0m] Could not install %s (%s not found)" layer el-file)
+        (tron/message! "\u2717" :red "Could not install %s (%s not found)" layer el-file)
       (let ((inhibit-message t))
         (load install-file))
-      (message "[\e[32m\u2714\e[0m] Installed %s" layer))))
+        (tron/message! "\u2714" :green "Installed %s" layer))))
 
 (provide 'tron-packages)

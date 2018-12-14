@@ -2,4 +2,4 @@
 
 set -e
 xrdb -merge etc/.Xresources
-EMACS_USER_DIRECTORY=/home/ddugue/new-emacs emacs -q -l init.el &
+emacs -q -l init.el &
