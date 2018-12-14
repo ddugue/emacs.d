@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+rm -fr packages/
+find layers -name "*.el" -type f -delete
+find layers -name "*.elc" -type f -delete

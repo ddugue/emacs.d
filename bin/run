@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -e
+xrdb -merge etc/.Xresources
+EMACS_USER_DIRECTORY=/home/ddugue/new-emacs emacs -q -l init.el &
