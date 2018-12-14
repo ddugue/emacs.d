@@ -1,0 +1,11 @@
+* Installation
+Installation and configuration of the use-package macro
+
+[[https://github.com/jwiegley/use-package][Project homepage]]
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package use-package
+(straight-use-package 'use-package)
+#+END_SRC
+
+We use straight.el, this way, we do note depend on the packages.el, also
+it would be possible to install any version (from git, melpa, etc...)

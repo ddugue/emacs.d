@@ -1,3 +1,5 @@
 .cache
 straight/
 packages/
+*.elc
+layers/**/*.el
