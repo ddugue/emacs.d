@@ -55,3 +55,10 @@
   (tron/bootstrap-straight)
   (message "Installing layers...")
   (mapcar 'tron/install-layer (or (when layer `(,layer)) tron-layers)))
+
+(defun tron/init ()
+  "Init code run only when not in batch"
+  (message "Starting Tron Emacs...")
+  (mapcar 'tron/load-layer (or (when (getenv "DEBUG") '(core)) tron-layers)))
+
+(unless noninteractive (tron/init))

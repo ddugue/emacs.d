@@ -75,7 +75,7 @@
         (tron/message! "\u2717" :red "Could not compile %s (%s not found)" layer layer-file)
         (let ((inhibit-message t))
             (org-babel-tangle-file layer-file))
-        (tron/message! "\u2714" :red "Compiled %s" layer))))
+        (tron/message! "\u2714" :green "Compiled %s" layer))))
 
 ;; Install a layer based on its .el or .elc file
 (defun tron/install-layer (layer)
@@ -88,5 +88,15 @@
       (let ((inhibit-message t))
         (load install-file))
         (tron/message! "\u2714" :green "Installed %s" layer))))
+
+;; Install a layer based on its .el or .elc file
+(defun tron/load-layer (layer)
+  "Function to load a layer"
+  (let* ((install-file (tron/layer-file layer "config"))
+         (el-file (concat install-file ".el"))
+         (elc-file (concat install-file ".elc")))
+    (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
+        (tron/message! "\u2717" :red "Could not load %s (%s not found)" layer el-file)
+      (load install-file))))
 
 (provide 'tron-packages)

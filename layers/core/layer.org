@@ -9,3 +9,31 @@ Installation and configuration of the use-package macro
 
 We use straight.el, this way, we do note depend on the packages.el, also
 it would be possible to install any version (from git, melpa, etc...)
+* Configuration
+Configuration file is loaded when emacs is run as an editor
+
+** Visual preferences
+UI Enhancements and preferences
+*** Disable scrollbar
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(scroll-bar-mode -1)
+#+END_SRC
+*** Disable menubar
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(menu-bar-mode -1)
+#+END_SRC
+*** Disable toolbar
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(tool-bar-mode -1)
+#+END_SRC
+*** Disable splash screen
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(setq inhibit-startup-screen t)
+#+END_SRC
+*** Highlight line
+We also want to highlight the current line by default
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+;; Enable highlighting current line for all modes
+(global-hl-line-mode 1)
+#+END_SRC
