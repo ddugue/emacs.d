@@ -59,7 +59,10 @@
 (defun tron/init ()
   "Init code run only when not in batch"
   (message "Starting Tron Emacs...")
-  (tron/load-package '(use-package bind-key) 'use-package)
+  ;; If we run in DEBUG, it means the use-package macro was not directly compiled
+  ;; when we ran the compile command. Hence, we need to load use-package
+  (when (getenv "DEBUG") (tron/load-package '(use-package bind-key) 'use-package))
+  ;; (tron/load-package '(use-package bind-key) 'use-package)
   (mapcar 'tron/load-layer (or (when (getenv "DEBUG") '(core)) tron-layers)))
 
 (unless noninteractive (tron/init))

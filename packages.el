@@ -79,7 +79,10 @@
         (tron/message! "\u2717" :red "Could not compile %s (%s not found)" layer layer-file)
         (let ((inhibit-message t))
           (org-babel-tangle-file layer-file)
-          (unless (getenv "DEBUG") (byte-recompile-directory (tron/layer-file layer) 0)))
+          (unless (getenv "DEBUG")
+            (progn
+              (tron/load-package '(use-package bind-key) 'use-package)
+              (byte-recompile-directory (tron/layer-file layer) 0))))
 
         (tron/message! "\u2714" :green "Compiled %s layer" layer))))
 
