@@ -59,6 +59,7 @@
 (defun tron/init ()
   "Init code run only when not in batch"
   (message "Starting Tron Emacs...")
+  (tron/load-package '(use-package bind-key) 'use-package)
   (mapcar 'tron/load-layer (or (when (getenv "DEBUG") '(core)) tron-layers)))
 
 (unless noninteractive (tron/init))

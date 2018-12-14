@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -e
+
+bin/clean
+DEBUG=true bin/compile
+bin/install
+bin/run

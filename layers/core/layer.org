@@ -1,4 +1,5 @@
 * Installation
+** Use-package
 Installation and configuration of the use-package macro
 
 [[https://github.com/jwiegley/use-package][Project homepage]]
@@ -9,6 +10,16 @@ Installation and configuration of the use-package macro
 
 We use straight.el, this way, we do note depend on the packages.el, also
 it would be possible to install any version (from git, melpa, etc...)
+** Evil
+Installation of the eVIl package, essential to the workflow
+
+[[https://github.com/emacs-evil/evil][Project Homepage]]
+
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package use-package
+(straight-use-package 'evil)
+#+END_SRC
+
 * Configuration
 Configuration file is loaded when emacs is run as an editor
 
@@ -36,4 +47,14 @@ We also want to highlight the current line by default
 #+BEGIN_SRC emacs-lisp :tangle config.el
 ;; Enable highlighting current line for all modes
 (global-hl-line-mode 1)
+#+END_SRC
+** Evil
+We want to enable evil globally
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+
+  (use-package evil
+    :load-path "straight/build/evil"
+    :config
+    (evil-mode 1))
 #+END_SRC

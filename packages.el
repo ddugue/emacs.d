@@ -66,6 +66,10 @@
   (let ((layer-name (or (and (symbolp layer) (symbol-name layer)) layer)))
     (concat user-emacs-directory "layers/" layer-name "/" file)))
 
+(defun tron/package-folder (package)
+  "Return a package folder"
+  (concat user-emacs-directory "straight/build/" (symbol-name package)))
+
 ;; Compile a layer .org files into its .el files
 (defun tron/compile-layer (layer)
   "Function to compile a layer org file into the different el files"
@@ -74,9 +78,10 @@
     (if (not (file-exists-p layer-file))
         (tron/message! "\u2717" :red "Could not compile %s (%s not found)" layer layer-file)
         (let ((inhibit-message t))
-          (org-babel-tangle-file layer-file))
-          ;; (unless (getenv "DEBUG") (byte-recompile-directory layer nil)))
-        (tron/message! "\u2714" :green "Compiled %s" layer))))
+          (org-babel-tangle-file layer-file)
+          (unless (getenv "DEBUG") (byte-recompile-directory (tron/layer-file layer) 0)))
+
+        (tron/message! "\u2714" :green "Compiled %s layer" layer))))
 
 ;; Install a layer based on its .el or .elc file
 (defun tron/install-layer (layer)
@@ -88,7 +93,7 @@
         (tron/message! "\u2717" :red "Could not install %s (%s not found)" layer el-file)
       (let ((inhibit-message t))
         (load install-file))
-        (tron/message! "\u2714" :green "Installed %s" layer))))
+        (tron/message! "\u2714" :green "Installed %s layer" layer))))
 
 ;; Install a layer based on its .el or .elc file
 (defun tron/load-layer (layer)
@@ -99,5 +104,15 @@
     (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
         (tron/message! "\u2717" :red "Could not load %s (%s not found)" layer el-file)
       (load install-file))))
+
+;; Utilities to work with packages
+(defun tron/load-package (dependencies package)
+  (let ((load-path (append load-path (mapcar 'tron/package-folder dependencies))))
+    (message "Load path is %s" load-path)
+    (require package)))
+  ;; (let ((load-path `(,(concat user-emacs-directory "straight/build/" (symbol-name package)))))
+  ;;   (message "Load path is %s" load-path)
+  ;;   (load (symbol-name package))
+  ;;   (message "required %s" (symbol-name package))))
 
 (provide 'tron-packages)

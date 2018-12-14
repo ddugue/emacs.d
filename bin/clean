@@ -2,5 +2,6 @@
 
 set -e
 rm -fr packages/
-find layers -name "*.el" -type f -delete
-find layers -name "*.elc" -type f -delete
+find ./layers -name "*.el" -type f -delete
+find ./layers -name "*.elc" -type f -delete
+rm -f packages.elc
