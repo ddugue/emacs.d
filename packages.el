@@ -113,9 +113,5 @@
   (let ((load-path (append load-path (mapcar 'tron/package-folder dependencies))))
     (message "Load path is %s" load-path)
     (require package)))
-  ;; (let ((load-path `(,(concat user-emacs-directory "straight/build/" (symbol-name package)))))
-  ;;   (message "Load path is %s" load-path)
-  ;;   (load (symbol-name package))
-  ;;   (message "required %s" (symbol-name package))))
 
 (provide 'tron-packages)
