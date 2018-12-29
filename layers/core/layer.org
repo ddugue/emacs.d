@@ -1,8 +1,9 @@
 * Installation
 ** Use-package
 Installation and configuration of the use-package macro
-
 [[https://github.com/jwiegley/use-package][Project homepage]]
+
+
 #+BEGIN_SRC emacs-lisp :tangle install.el
 ;; Install package use-package
 (straight-use-package 'use-package)
@@ -20,6 +21,20 @@ Installation of the eVIl package, essential to the workflow
 (straight-use-package 'evil)
 #+END_SRC
 
+** Key Chord
+Installation of the key chord macro
+[[https://www.emacswiki.org/emacs/KeyChord][Project Homepage]]
+
+#+BEGIN_SRC emacs-lisp :tangle install.el
+(straight-use-package 'key-chord)
+#+END_SRC
+
+We also want to install key seq to get the order of the keystrokes
+[[https://github.com/vlevit/key-seq.el][Project Homepage]]
+
+#+BEGIN_SRC emacs-lisp :tangle install.el
+(straight-use-package 'key-seq)
+#+END_SRC
 * Configuration
 Configuration file is loaded when emacs is run as an editor
 
@@ -48,13 +63,56 @@ We also want to highlight the current line by default
 ;; Enable highlighting current line for all modes
 (global-hl-line-mode 1)
 #+END_SRC
+
 ** Evil
 We want to enable evil globally
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
+    (use-package evil
+      :load-path "straight/build/evil"
+      :config
+      (evil-mode 1)
 
-  (use-package evil
-    :load-path "straight/build/evil"
+      (setq evil-want-Y-yank-to-eol t)
+      (setq evil-visual-state-cursor '(hollow))
+
+      (define-key evil-motion-state-map (kbd "SPC") nil)
+      (define-key evil-motion-state-map "," nil)
+      (define-key evil-motion-state-map "zz" nil)
+      (define-key evil-motion-state-map "za" nil)
+      (define-key evil-normal-state-map (kbd "g,") nil)
+
+      (define-key evil-motion-state-map "h" 'evil-previous-line)
+      (define-key evil-motion-state-map "t" 'evil-next-line)
+      (define-key evil-motion-state-map "n" 'evil-backward-char)
+      (define-key evil-motion-state-map "s" 'evil-forward-char)
+
+      (define-key evil-motion-state-map "l" 'evil-search-next)
+      (define-key evil-motion-state-map "L" 'evil-search-backward)
+
+      (define-key evil-normal-state-map "J" 'join-line)
+      (define-key evil-normal-state-map "s" 'evil-forward-char)
+      (define-key evil-normal-state-map "j"
+          #'(lambda () (join-line 1)))
+
+      (define-key evil-insert-state-map (kbd "C-d") 'evil-delete-backward-char)
+  )
+#+END_SRC
+** Key-Chord
+Key chord is an extension to create two key strokes shortcut. Quite useful.
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package key-seq
+    :load-path "straight/build/key-seq"
+    :commands (key-seq-define))
+
+(use-package key-chord
+    :load-path "straight/build/key-chord"
     :config
-    (evil-mode 1))
+    (setq key-chord-two-keys-delay 0.1) ;; default 0.1
+    (setq key-chord-one-key-delay 0.2) ;; default 0.2
+    (key-chord-mode 1)
+    (key-seq-define evil-insert-state-map "ht" 'evil-normal-state)
+    (key-seq-define evil-replace-state-map "ht" 'evil-normal-state)
+)
 #+END_SRC
