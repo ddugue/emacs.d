@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-export DEBUG=true
+# export DEBUG=true
+# export COREONLY=true
 bin/clean
 bin/compile
 bin/install
