@@ -16,7 +16,9 @@
            'silent 'inhibit-cookies)
         (goto-char (point-max))
         (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage)))
+    (load bootstrap-file nil 'nomessage))
+  (straight-use-package 'use-package))
+
 
 
 ;; Feature setter
@@ -80,9 +82,8 @@
         (let ((inhibit-message t))
           (org-babel-tangle-file layer-file)
           (unless (getenv "DEBUG")
-            (progn
-              (tron/load-package '(use-package bind-key) 'use-package)
-              (byte-recompile-directory (tron/layer-file layer) 0))))
+            (tron/load-package '(use-package bind-key) 'use-package)
+            (byte-recompile-directory (tron/layer-file layer) 0)))
 
         (tron/message! "\u2714" :green "Compiled %s layer" layer))))
 
@@ -94,7 +95,7 @@
          (elc-file (concat install-file ".elc")))
     (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
         (tron/message! "\u2717" :red "Could not install %s (%s not found)" layer el-file)
-      (let ((inhibit-message t))
+      (let ((inhibit-message (not (getenv "DEBUG"))))
         (load install-file))
         (tron/message! "\u2714" :green "Installed %s layer" layer))))
 

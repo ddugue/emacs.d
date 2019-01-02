@@ -26,7 +26,8 @@ Installation of the key chord macro
 [[https://www.emacswiki.org/emacs/KeyChord][Project Homepage]]
 
 #+BEGIN_SRC emacs-lisp :tangle install.el
-(straight-use-package 'key-chord)
+(straight-use-package
+  '(key-chord :type git :host github :repo "emacsorphanage/key-chord"))
 #+END_SRC
 
 We also want to install key seq to get the order of the keystrokes
@@ -68,34 +69,35 @@ We also want to highlight the current line by default
 We want to enable evil globally
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
-    (use-package evil
-      :load-path "straight/build/evil"
-      :config
-      (evil-mode 1)
+(use-package evil
+  :load-path "straight/build/evil"
+  :config
+  (evil-mode 1)
 
-      (setq evil-want-Y-yank-to-eol t)
-      (setq evil-visual-state-cursor '(hollow))
+  (setq evil-want-Y-yank-to-eol t)
+  (setq evil-visual-state-cursor '(hollow))
 
-      (define-key evil-motion-state-map (kbd "SPC") nil)
-      (define-key evil-motion-state-map "," nil)
-      (define-key evil-motion-state-map "zz" nil)
-      (define-key evil-motion-state-map "za" nil)
-      (define-key evil-normal-state-map (kbd "g,") nil)
+  (define-key evil-motion-state-map (kbd "SPC") nil)
+  (define-key evil-motion-state-map "," nil)
+  (define-key evil-motion-state-map "zz" nil)
+  (define-key evil-motion-state-map "za" nil)
+  (define-key evil-normal-state-map (kbd "g,") nil)
 
-      (define-key evil-motion-state-map "h" 'evil-previous-line)
-      (define-key evil-motion-state-map "t" 'evil-next-line)
-      (define-key evil-motion-state-map "n" 'evil-backward-char)
-      (define-key evil-motion-state-map "s" 'evil-forward-char)
+  (when (tron/has-feature-p 'dvorak)
+    (define-key evil-motion-state-map "h" 'evil-previous-line)
+    (define-key evil-motion-state-map "t" 'evil-next-line)
+    (define-key evil-motion-state-map "n" 'evil-backward-char)
+    (define-key evil-motion-state-map "s" 'evil-forward-char)
 
-      (define-key evil-motion-state-map "l" 'evil-search-next)
-      (define-key evil-motion-state-map "L" 'evil-search-backward)
+    (define-key evil-motion-state-map "l" 'evil-search-next)
+    (define-key evil-motion-state-map "L" 'evil-search-backward)
+    (define-key evil-normal-state-map "j"
+      #'(lambda () (join-line 1))))
 
-      (define-key evil-normal-state-map "J" 'join-line)
-      (define-key evil-normal-state-map "s" 'evil-forward-char)
-      (define-key evil-normal-state-map "j"
-          #'(lambda () (join-line 1)))
+  (define-key evil-normal-state-map "J" 'join-line)
+  ;; (define-key evil-normal-state-map "s" 'evil-forward-char)
 
-      (define-key evil-insert-state-map (kbd "C-d") 'evil-delete-backward-char)
+  (define-key evil-insert-state-map (kbd "C-d") 'evil-delete-backward-char)
   )
 #+END_SRC
 ** Key-Chord

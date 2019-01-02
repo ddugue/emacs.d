@@ -37,21 +37,20 @@
        core        ;; Feature that is a test
 
        :features
-       p1          ;; Package P1
-       p2
+       dvorak      ;; Enable dvorak remapping of some keys
        )
 
 ;; Scripting commands, can be run straight from command line
 (defun tron/compile (&optional layer)
   "Compile layers to make them ready for installation"
   (interactive "SLayer Name:")
+  (tron/bootstrap-straight)
   (message "Compiling layers...")
   (mapcar 'tron/compile-layer (or (when layer `(,layer)) tron-layers)))
 
 (defun tron/install (&optional layer)
   "Install and update packages to latest version"
   (interactive "SLayer Name:")
-  (message "Bootstrapping Straight.el...")
   (tron/bootstrap-straight)
   (message "Installing layers...")
   (mapcar 'tron/install-layer (or (when layer `(,layer)) tron-layers)))
