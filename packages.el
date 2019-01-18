@@ -62,6 +62,10 @@
   "Return non-nil if feature is installed"
   (memq feature tron-features))
 
+(defun tron/has-layer-p (layer)
+  "Return non-nil if layer is installed"
+  (memq layer tron-layers))
+
 ;; Utilities to work with layers
 (defun tron/layer-file (layer &optional file)
   "Return a layer file based on the layer and the file"

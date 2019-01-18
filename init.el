@@ -34,7 +34,8 @@
 (require 'tron-packages (emacs-path "packages"))
 
 (tron! :layers
-       core        ;; Feature that is a test
+       core       ;; Core layer
+       ivy        ;; Ivy completion framework
 
        :features
        dvorak      ;; Enable dvorak remapping of some keys

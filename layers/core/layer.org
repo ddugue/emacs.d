@@ -1,3 +1,9 @@
+In this layer we try to set up all the bare minimum necessary configurations
+to edit basic files
+
+TODO: Add general to define keys
+
+
 * Installation
 ** Use-package
 Installation and configuration of the use-package macro
@@ -36,8 +42,11 @@ We also want to install key seq to get the order of the keystrokes
 #+BEGIN_SRC emacs-lisp :tangle install.el
 (straight-use-package 'key-seq)
 #+END_SRC
+
 * Configuration
 Configuration file is loaded when emacs is run as an editor
+** Librairies
+Librairies that should be in the global scope
 
 ** Visual preferences
 UI Enhancements and preferences
@@ -114,7 +123,11 @@ Key chord is an extension to create two key strokes shortcut. Quite useful.
     (setq key-chord-two-keys-delay 0.1) ;; default 0.1
     (setq key-chord-one-key-delay 0.2) ;; default 0.2
     (key-chord-mode 1)
-    (key-seq-define evil-insert-state-map "ht" 'evil-normal-state)
-    (key-seq-define evil-replace-state-map "ht" 'evil-normal-state)
+    (when (tron/has-feature-p 'dvorak)
+      (key-seq-define evil-insert-state-map "ht" 'evil-normal-state)
+      (key-seq-define evil-replace-state-map "ht" 'evil-normal-state))
+    (unless (tron/has-feature-p 'dvorak)
+      (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+      (key-chord-define evil-replace-state-map "jk" 'evil-normal-state))
 )
 #+END_SRC
