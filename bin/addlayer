@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -e
+
+mkdir -p layers/$1
+touch layers/$1/layer.org
