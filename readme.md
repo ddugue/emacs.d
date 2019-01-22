@@ -8,3 +8,4 @@ TODO: Add layer for orgmode
 TODO: Fix numlock arch
 TODO: Fix xrandr arch
 TODO: Add function to make file executable
+TODO: Add a way to make lexical scoping t for all files

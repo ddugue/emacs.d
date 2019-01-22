@@ -7,6 +7,13 @@ TODO: Better ciw
 - javascript, camel-case
 - elisp quote
 
+* Lexical scoping
+We want to set lexical scoping for this config file.
+Provides a small boost
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+  ;;; -*- lexical-binding: t -*-
+#+END_SRC
 * Installation
 ** Use-package
 Installation and configuration of the use-package macro

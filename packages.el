@@ -20,6 +20,16 @@
   (straight-use-package 'use-package))
 
 
+(defmacro tron/try (body msg)
+  "Try/catch with a simple message showing"
+  `(condition-case err
+       (let ((inhibit-message (not (getenv "VERBOSE"))))
+         (progn ,body))
+    ('error
+     (tron/message! "\u2717" :red ,msg layer (error-message-string err))
+     (signal (car err) (cdr err)))
+    ))
+
 ;; Feature setter
 ;; Set the different features and global package list
 ;; Doesn't do anything by itself
@@ -85,14 +95,9 @@
   (let ((layer-file (tron/layer-file layer "layer.org")))
     (if (not (file-exists-p layer-file))
         (tron/message! "\u2717" :red "Could not tangle %s (%s not found)" layer layer-file)
-
-      (condition-case err
-        (let ((inhibit-message (not (getenv "VERBOSE"))))
-          (org-babel-tangle-file layer-file))
-        ('error
-         (tron/message! "\u2717" :red "Could not tangle %s (%s not found)" layer (error-message-string err))
-        (signal (car err) (cdr err)))
-        )
+      (tron/try
+         (org-babel-tangle-file layer-file)
+         "Could not tangle %s (%s)")
 
         (tron/message! "\u2714" :green "Tangled %s layer" layer)))
   )
@@ -100,7 +105,11 @@
 (defun tron/compile-layer (layer)
   "Function to compile a layer org file into the different el files"
   (tron/load-package '(use-package bind-key) 'use-package)
-  (byte-recompile-directory (tron/layer-file layer) 0))
+  (when (getenv "VERBOSE") (message "Compiling %s" layer))
+  (tron/try
+   (byte-recompile-file (tron/layer-file layer "config.el") t 0)
+   "Could not install %s (%s)")
+  (tron/message! "\u2714" :green "Compiled %s layer" layer))
 
 
 ;; Install a layer based on its .el or .elc file
@@ -111,9 +120,13 @@
          (elc-file (concat install-file ".elc")))
     (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
         (tron/message! "\u2717" :red "Could not install %s (%s not found)" layer el-file)
-      (let ((inhibit-message (not (getenv "DEBUG"))))
-        (load install-file))
-        (tron/message! "\u2714" :green "Installed %s layer" layer))))
+
+      (tron/try
+       (load install-file)
+       "Could not install %s (%s)")
+
+      (tron/message! "\u2714" :green "Installed %s layer" layer))))
+
 
 ;; Install a layer based on its .el or .elc file
 (defun tron/load-layer (layer)
@@ -128,7 +141,7 @@
 ;; Utilities to work with packages
 (defun tron/load-package (dependencies package)
   (let ((load-path (append load-path (mapcar 'tron/package-folder dependencies))))
-    (message "Load path is %s" load-path)
+    (when (getenv "DEBUG") (message "Load path is %s" load-path))
     (require package)))
 
 (provide 'tron-packages)
