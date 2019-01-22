@@ -1,0 +1,50 @@
+General is an macro-expander to create evil keybindings.
+
+Which-key is an helper to show keybindings dynamically
+
+* Lexical scoping
+We want to set lexical scoping for this config file.
+Provides a small boost
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+  ;;; -*- lexical-binding: t -*-
+#+END_SRC
+* Installation
+** General
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package general
+(straight-use-package 'general)
+#+END_SRC
+** Which-key
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package which-key
+(straight-use-package 'which-key)
+#+END_SRC
+* Configuration
+** General
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package general
+  :load-path "straight/build/general"
+  :defer 2
+  :config
+  (general-define-key
+    :states 'normal
+    :prefix "SPC"
+
+    ;; Files (f)
+    "f" '(:ignore t :which-key "Files")
+    "ff" 'counsel-find-file))
+
+#+END_SRC
+** Which-key
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package which-key
+  :load-path "straight/build/which-key"
+  :defer t
+  :diminish which-key-mode
+  :config
+  (which-key-setup-minibuffer)
+  (which-key-mode 1))
+#+END_SRC
