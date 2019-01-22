@@ -4,6 +4,7 @@ set -e
 # export DEBUG=true
 # export COREONLY=true
 bin/clean
-bin/compile
+bin/tangle
 bin/install
+bin/compile
 bin/run

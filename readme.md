@@ -7,3 +7,4 @@ TODO: Add layer for orgmode
   - Make sure tangle works well
 TODO: Fix numlock arch
 TODO: Fix xrandr arch
+TODO: Add function to make file executable

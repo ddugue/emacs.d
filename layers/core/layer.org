@@ -3,6 +3,9 @@ to edit basic files
 
 TODO: Add general to define keys
 
+TODO: Better ciw
+- javascript, camel-case
+- elisp quote
 
 * Installation
 ** Use-package

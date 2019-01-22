@@ -34,8 +34,9 @@
 (require 'tron-packages (emacs-path "packages"))
 
 (tron! :layers
-       core       ;; Core layer
-       ivy        ;; Ivy completion framework
+       core         ;; Core layer
+       ivy          ;; Ivy completion framework
+       keybindings  ;; Global keybindings
 
        :features
        dvorak      ;; Enable dvorak remapping of some keys
@@ -43,11 +44,17 @@
 
 ;; Scripting commands, can be run straight from command line
 (defun tron/compile (&optional layer)
+  "Compile el into elc to make them more efficient"
+  (interactive "SLayer Name:")
+  (message "Compiling layers...")
+  (mapcar 'tron/compile-layer (or (when layer `(,layer)) tron-layers)))
+
+(defun tron/tangle (&optional layer)
   "Compile layers to make them ready for installation"
   (interactive "SLayer Name:")
   (tron/bootstrap-straight)
-  (message "Compiling layers...")
-  (mapcar 'tron/compile-layer (or (when layer `(,layer)) tron-layers)))
+  (message "Tangling layers...")
+  (mapcar 'tron/tangle-layer (or (when layer `(,layer)) tron-layers)))
 
 (defun tron/install (&optional layer)
   "Install and update packages to latest version"
@@ -61,7 +68,7 @@
   (message "Starting Tron Emacs...")
   ;; If we run in DEBUG, it means the use-package macro was not directly compiled
   ;; when we ran the compile command. Hence, we need to load use-package
-  (when (getenv "DEBUG") (tron/load-package '(use-package bind-key) 'use-package))
+  ;; (when (getenv "DEBUG") (tron/load-package '(use-package bind-key) 'use-package))
   (mapcar 'tron/load-layer (or (when (getenv "COREONLY") '(core)) tron-layers)))
 
 (unless noninteractive (tron/init))

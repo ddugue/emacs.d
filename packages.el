@@ -20,7 +20,6 @@
   (straight-use-package 'use-package))
 
 
-
 ;; Feature setter
 ;; Set the different features and global package list
 ;; Doesn't do anything by itself
@@ -39,7 +38,7 @@
         (when temp
           (add-to-list 'result
                        `(set ',(intern (concat "tron-" (substring (symbol-name mode) 1)))
-                              (quote ,temp))))
+                              (quote ,(reverse temp)))))
         (setq mode current)
         (setq current nil)))
     `(progn ,@result)))
@@ -77,19 +76,32 @@
   (concat user-emacs-directory "straight/build/" (symbol-name package)))
 
 ;; Compile a layer .org files into its .el files
-(defun tron/compile-layer (layer)
-  "Function to compile a layer org file into the different el files"
+(defun tron/tangle-layer (layer)
+  "Function to tangle a layer org file into the different el files"
   (require 'org)
+
+  ;; Verbose flag enabled
+  (when (getenv "VERBOSE") (message "Tangling %s..." layer))
   (let ((layer-file (tron/layer-file layer "layer.org")))
     (if (not (file-exists-p layer-file))
-        (tron/message! "\u2717" :red "Could not compile %s (%s not found)" layer layer-file)
-        (let ((inhibit-message t))
-          (org-babel-tangle-file layer-file)
-          (unless (getenv "DEBUG")
-            (tron/load-package '(use-package bind-key) 'use-package)
-            (byte-recompile-directory (tron/layer-file layer) 0)))
+        (tron/message! "\u2717" :red "Could not tangle %s (%s not found)" layer layer-file)
 
-        (tron/message! "\u2714" :green "Compiled %s layer" layer))))
+      (condition-case err
+        (let ((inhibit-message (not (getenv "VERBOSE"))))
+          (org-babel-tangle-file layer-file))
+        ('error
+         (tron/message! "\u2717" :red "Could not tangle %s (%s not found)" layer (error-message-string err))
+        (signal (car err) (cdr err)))
+        )
+
+        (tron/message! "\u2714" :green "Tangled %s layer" layer)))
+  )
+
+(defun tron/compile-layer (layer)
+  "Function to compile a layer org file into the different el files"
+  (tron/load-package '(use-package bind-key) 'use-package)
+  (byte-recompile-directory (tron/layer-file layer) 0))
+
 
 ;; Install a layer based on its .el or .elc file
 (defun tron/install-layer (layer)
@@ -111,7 +123,7 @@
          (elc-file (concat install-file ".elc")))
     (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
         (tron/message! "\u2717" :red "Could not load %s (%s not found)" layer el-file)
-      (load install-file))))
+      (load (if (getenv "DEBUG") el-file install-file)))))
 
 ;; Utilities to work with packages
 (defun tron/load-package (dependencies package)
