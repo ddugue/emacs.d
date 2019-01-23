@@ -37,47 +37,46 @@ Provides a small boost
 ** Librairies
 Librairies to enable globally when loading this layer
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(tron/load-package '(bind-key) 'bind-key)
-(tron/load-package '(diminish) 'diminish)
+  (tron/load-package '(bind-key) 'bind-key)
+  ;; (tron/load-package '(diminish) 'diminish)
 #+END_SRC
 
 ** Functions
 *** Custom IVY hydra
 Custom bindings for a custom hydra binding. It adds some functions to our IVY.
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(defun my/ivy-get-selection ()
-    "Returns the selected ivy text"
-    (expand-file-name ivy--current ivy--directory))
+  ;; (defun my/ivy-get-selection ()
+  ;;     "Returns the selected ivy text"
+  ;;     (expand-file-name ivy--current ivy--directory))
 
-(defun my/ivy-append-yank ()
-    "Append the current line to the current kill-ring (via a register"
-    (interactive)
-    (set-register 300 (concat (get-register 300) (my/ivy-get-selection) "\n")))
+  ;; (defun my/ivy-append-yank ()
+  ;;     "Append the current line to the current kill-ring (via a register"
+  ;;     (interactive)
+  ;;     (set-register 300 (concat (get-register 300) (my/ivy-get-selection) "\n")))
 
-(defun my/ivy-override-yank ()
-    "Override the latest kill-ring"
-    (interactive)
-    (kill-new (my/ivy-get-selection)))
+  ;; (defun my/ivy-override-yank ()
+  ;;     "Override the latest kill-ring"
+  ;;     (interactive)
+  ;;     (kill-new (my/ivy-get-selection)))
 
-(defun my/ivy-mark ()
-    "Append the current line to the current kill-ring (via a register"
-    (interactive)
-    (set-register 400 (concat (get-register 400) ivy--current "\n")))
+  ;; (defun my/ivy-mark ()
+  ;;     "Append the current line to the current kill-ring (via a register"
+  ;;     (interactive)
+  ;;     (set-register 400 (concat (get-register 400) ivy--current "\n")))
 
-(defun my/ivy-mark-display-transformer (str)
-    "Transform string -> string"
-    (let ((reg (get-register 400)))
-    (if (member str (when reg (split-string reg "\n")))
-     (concat "* " str)
-     str)))
+  ;; (defun my/ivy-mark-display-transformer (str)
+  ;;     "Transform string -> string"
+  ;;     (let ((reg (get-register 400)))
+  ;;     (if (member str (when reg (split-string reg "\n")))
+  ;;      (concat "* " str)
+  ;;      str)))
 
 #+END_SRC
 *** Installtion & Configuration of Ivy
 We configure and install ivy, which is the Engine
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(use-package ivy
+(tron/def-package! ivy
   :diminish ivy-mode
-  :load-path "straight/build/ivy"
   :commands (ivy-mode ivy-completing-read)
   :bind
   (("C-x b" . ivy-switch-buffer)

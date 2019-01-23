@@ -25,7 +25,7 @@ Installation and configuration of the use-package macro
 (straight-use-package 'use-package)
 #+END_SRC
 
-We use straight.el, this way, we do note depend on the packages.el, also
+We use straight.el, this way, we do not depend on the packages.el, also
 it would be possible to install any version (from git, melpa, etc...)
 ** Evil
 Installation of the eVIl package, essential to the workflow
@@ -88,8 +88,7 @@ We also want to highlight the current line by default
 We want to enable evil globally
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(use-package evil
-  :load-path "straight/build/evil"
+(tron/def-package! evil
   :config
   (evil-mode 1)
 
@@ -123,12 +122,10 @@ We want to enable evil globally
 Key chord is an extension to create two key strokes shortcut. Quite useful.
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(use-package key-seq
-    :load-path "straight/build/key-seq"
+(tron/def-package! key-seq
     :commands (key-seq-define))
 
-(use-package key-chord
-    :load-path "straight/build/key-chord"
+(tron/def-package! key-chord
     :config
     (setq key-chord-two-keys-delay 0.1) ;; default 0.1
     (setq key-chord-one-key-delay 0.2) ;; default 0.2

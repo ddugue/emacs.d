@@ -4,6 +4,7 @@
 ;; You can find more info here:
 ;; https://github.com/raxod502/straight.el#getting-started
 (defvar bootstrap-version)
+
 (defun tron/bootstrap-straight ()
   "Function to install straight.el"
   (let ((bootstrap-file
@@ -16,8 +17,26 @@
            'silent 'inhibit-cookies)
         (goto-char (point-max))
         (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage))
-  (straight-use-package 'use-package))
+    (load bootstrap-file nil 'nomessage)))
+  ;; (straight-use-package 'use-package))
+
+(defun tron/straight-path (pkg)
+  "Return the path of a package in straight"
+  (list (emacs-path (format "straight/build/%s" pkg))))
+
+(defmacro with-timer (title &rest forms)
+  "Run the given FORMS, counting the elapsed time.
+A message including the given TITLE and the corresponding elapsed
+time is displayed."
+  (declare (indent 1))
+  (let ((nowvar (make-symbol "now"))
+        (body   `(progn ,@forms)))
+    `(let ((,nowvar (current-time)))
+       (message "%s..." ,title)
+       (prog1 ,body
+         (let ((elapsed
+                (float-time (time-subtract (current-time) ,nowvar))))
+           (message "%s... done (%.3fs)" ,title elapsed))))))
 
 
 (defmacro tron/try (body msg)
@@ -106,9 +125,10 @@
   "Function to compile a layer org file into the different el files"
   (tron/load-package '(use-package bind-key) 'use-package)
   (when (getenv "VERBOSE") (message "Compiling %s" layer))
+  (unless (getenv "DEBUG") (setq use-package-expand-minimally t))
   (tron/try
    (byte-recompile-file (tron/layer-file layer "config.el") t 0)
-   "Could not install %s (%s)")
+   "Could not compile %s (%s)")
   (tron/message! "\u2714" :green "Compiled %s layer" layer))
 
 
@@ -120,13 +140,11 @@
          (elc-file (concat install-file ".elc")))
     (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
         (tron/message! "\u2717" :red "Could not install %s (%s not found)" layer el-file)
-
       (tron/try
        (load install-file)
        "Could not install %s (%s)")
 
       (tron/message! "\u2714" :green "Installed %s layer" layer))))
-
 
 ;; Install a layer based on its .el or .elc file
 (defun tron/load-layer (layer)
@@ -143,5 +161,11 @@
   (let ((load-path (append load-path (mapcar 'tron/package-folder dependencies))))
     (when (getenv "DEBUG") (message "Load path is %s" load-path))
     (require package)))
+
+
+(defmacro tron/def-package! (name &rest plist)
+  "A thin wrapper around `use-package'."
+  (setq plist `(:load-path ,(format "straight/build/%s" name) ,@plist))
+  `(use-package ,name ,@plist))
 
 (provide 'tron-packages)

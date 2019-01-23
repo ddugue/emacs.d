@@ -2,4 +2,5 @@
 
 set -e
 xrdb -merge etc/.Xresources
-emacs -q -l init.el &
+export VERBOSE=true
+emacs -q --no-site-lisp --no-site-file --no-splash -l init.el &

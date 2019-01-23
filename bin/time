@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -e
-echo "Base measure"
-time emacs -q --eval '(kill-emacs)'
-
-echo "Current init time"
-time emacs -q -l init.el --eval '(kill-emacs)'

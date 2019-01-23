@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+echo "Base measure"
+time emacs -Q --eval '(kill-emacs)'
+
+echo "Current init time"
+time emacs --no-site-lisp --no-site-file --no-splash -q -l init.el --eval '(kill-emacs)'
+
+echo "Detail profiling"
+export DEBUG=true
+emacs -q --no-site-lisp --no-site-file --no-splash -l init.el &

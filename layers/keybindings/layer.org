@@ -24,9 +24,7 @@ Provides a small boost
 ** General
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(use-package general
-  :load-path "straight/build/general"
-  :defer 2
+(tron/def-package! general
   :config
   (general-define-key
     :states 'normal
@@ -40,9 +38,7 @@ Provides a small boost
 ** Which-key
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(use-package which-key
-  :load-path "straight/build/which-key"
-  :defer t
+(tron/def-package! which-key
   :diminish which-key-mode
   :config
   (which-key-setup-minibuffer)
