@@ -8,14 +8,6 @@ TODO: Better ciw
 - elisp quote
 TODO: Add different face for current line
 TODO: Make sure shortcut work EVERYWHERE in emacs
-
-* Lexical scoping
-We want to set lexical scoping for this config file.
-Provides a small boost
-
-#+BEGIN_SRC emacs-lisp :tangle config.el
-  ;;; -*- lexical-binding: t -*-
-#+END_SRC
 * Installation
 ** Use-package
 Installation and configuration of the use-package macro
@@ -66,6 +58,7 @@ Since Emacs 26, there is a built-in way of line numbers!!!
   '(display-line-numbers-current-absolute t)
   '(display-line-numbers-width 3)
   '(display-line-numbers-widen nil))
+
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 #+END_SRC

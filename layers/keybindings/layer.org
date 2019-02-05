@@ -4,13 +4,6 @@ Which-key is an helper to show keybindings dynamically
 TODO: Add Toggle for line numbers
 TODO: Add Toggle for line numbers absolute
 
-* Lexical scoping
-We want to set lexical scoping for this config file.
-Provides a small boost
-
-#+BEGIN_SRC emacs-lisp :tangle config.el
-  ;;; -*- lexical-binding: t -*-
-#+END_SRC
 * Installation
 ** General
 #+BEGIN_SRC emacs-lisp :tangle install.el
@@ -39,6 +32,9 @@ Provides a small boost
     ;; Buffers (b)
     "b" '(:ignore t :which-key "Buffers")
     "bb" 'ivy-switch-buffer
+
+    ;; Toggles (t)
+    "t" '(:ignore t :which-key "Toggles")
 ))
 
 #+END_SRC

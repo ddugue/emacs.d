@@ -68,6 +68,7 @@
     (tron/load-package '(use-package bind-key) 'use-package)
     (setq debug-on-error t))
 
+  ;; When loading in debug, we want to register the timing of the different layers
   (if (getenv "DEBUG")
       (mapcar (lambda (layer)
                 (with-timer (format "Loading %s" layer) (tron/load-layer layer))) tron-layers)

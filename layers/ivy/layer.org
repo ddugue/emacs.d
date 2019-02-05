@@ -2,13 +2,6 @@ Ivy is a generic completion framework. We can use it to search, files, buffers, 
 lists, etc...
 
 [[http://github.com/abo-abo/swiper][Project homepage]]
-* Lexical scoping
-We want to set lexical scoping for this config file.
-Provides a small boost
-
-#+BEGIN_SRC emacs-lisp :tangle config.el
-  ;;; -*- lexical-binding: t -*-
-#+END_SRC
 * Check wether helm or ido is installed
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (when (or (tron/has-layer-p 'ido) (tron/has-layer-p 'helm))

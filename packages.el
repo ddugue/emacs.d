@@ -96,13 +96,20 @@ time is displayed."
 
 ;; Utilities to work with layers
 (defun tron/layer-file (layer &optional file)
-  "Return a layer file based on the layer and the file"
+  "Return a file in the layer folder"
   (let ((layer-name (or (and (symbolp layer) (symbol-name layer)) layer)))
     (concat user-emacs-directory "layers/" layer-name "/" file)))
 
 (defun tron/package-folder (package)
   "Return a package folder"
   (concat user-emacs-directory "straight/build/" (symbol-name package)))
+
+(defun tron/prepend-to-file (file string)
+  "Prepend string to file"
+  (with-temp-file file
+    (insert string)
+    (newline)
+    (insert-file-contents file)))
 
 ;; Compile a layer .org files into its .el files
 (defun tron/tangle-layer (layer)
@@ -114,12 +121,16 @@ time is displayed."
   (let ((layer-file (tron/layer-file layer "layer.org")))
     (if (not (file-exists-p layer-file))
         (tron/message! "\u2717" :red "Could not tangle %s (%s not found)" layer layer-file)
+
       (tron/try
          (org-babel-tangle-file layer-file)
          "Could not tangle %s (%s)")
+      (let ((config-file (tron/layer-file layer "config.el")))
+            (tron/try
+             (tron/prepend-to-file config-file ";; -*- lexical-binding: t -*-")
+             "Could not pretend %s (%s)"))
 
-        (tron/message! "\u2714" :green "Tangled %s layer" layer)))
-  )
+      (tron/message! "\u2714" :green "Tangled layer %s" layer))))
 
 (defun tron/compile-layer (layer)
   "Function to compile a layer org file into the different el files"
