@@ -32,7 +32,12 @@ Provides a small boost
 
     ;; Files (f)
     "f" '(:ignore t :which-key "Files")
-    "ff" 'counsel-find-file))
+    "ff" 'counsel-find-file
+
+    ;; Buffers (b)
+    "b" '(:ignore t :which-key "Buffers")
+    "bb" 'ivy-switch-buffer
+))
 
 #+END_SRC
 ** Which-key
@@ -42,5 +47,5 @@ Provides a small boost
   :diminish which-key-mode
   :config
   (which-key-setup-minibuffer)
-  (which-key-mode 1))
+  (which-key-mode))
 #+END_SRC
