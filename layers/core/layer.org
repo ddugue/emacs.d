@@ -7,6 +7,7 @@ TODO: Better ciw
 - javascript, camel-case
 - elisp quote
 TODO: Add different face for current line
+TODO: Make sure shortcut work EVERYWHERE in emacs
 
 * Lexical scoping
 We want to set lexical scoping for this config file.
@@ -56,18 +57,15 @@ We also want to install key seq to get the order of the keystrokes
 
 * Configuration
 Configuration file is loaded when emacs is run as an editor
-** Librairies
-Librairies that should be in the global scope
-
 ** Line numbers
 Since Emacs 26, there is a built-in way of line numbers!!!
-#+BEGIN_SRC emcas-lisp :tangle config.el
+#+BEGIN_SRC emacs-lisp :tangle config.el
 ;; Line numbering
-(setq
-  display-line-numbers-type 'visual
-  display-line-numbers-current-absolute t
-  display-line-numbers-width 3
-  display-line-numbers-widen t)
+(custom-set-variables
+  '(display-line-numbers-type 'relative)
+  '(display-line-numbers-current-absolute t)
+  '(display-line-numbers-width 3)
+  '(display-line-numbers-widen nil))
 (add-hook 'text-mode-hook #'display-line-numbers-mode)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
 #+END_SRC

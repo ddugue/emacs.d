@@ -1,6 +1,8 @@
 General is an macro-expander to create evil keybindings.
 
 Which-key is an helper to show keybindings dynamically
+TODO: Add Toggle for line numbers
+TODO: Add Toggle for line numbers absolute
 
 * Lexical scoping
 We want to set lexical scoping for this config file.
