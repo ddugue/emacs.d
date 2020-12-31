@@ -66,7 +66,7 @@ Custom bindings for a custom hydra binding. It adds some functions to our IVY.
      str)))
 
 #+END_SRC
-*** Installtion & Configuration of Ivy
+*** Installation & Configuration of Ivy
 We configure and install ivy, which is the Engine
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (use-package ivy
@@ -137,7 +137,7 @@ We configure and install ivy, which is the Engine
 
 #+END_SRC
 
-*** Installation and configuration of Counsel
+*** Installation & Configuration of Counsel
 We install and configure counsel, which uses ivy and provides some nice default funcions
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
