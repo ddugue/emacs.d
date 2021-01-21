@@ -10,13 +10,6 @@
       gc-cons-percentage 0.6
       auto-window-vscroll nil)
 
-(add-hook 'after-init-hook
-          `(lambda ()
-             (setq file-name-handler-alist file-name-handler-alist-old
-                   gc-cons-threshold 800000
-                   gc-cons-percentage 0.1)
-             (garbage-collect)) t)
-
 (setq user-emacs-directory (file-name-directory load-file-name))
 (setq initial-frame-alist '((name . "editor") (minibuffer . nil)))
 (add-to-list 'default-frame-alist '(minibuffer . nil))
@@ -109,3 +102,8 @@
   )
 
 (unless noninteractive (tron/init))
+
+(setq file-name-handler-alist file-name-handler-alist-old
+      gc-cons-threshold 800000
+      gc-cons-percentage 0.1)
+(garbage-collect)
