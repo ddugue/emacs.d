@@ -1,6 +1,17 @@
-emacs.font: Inconsolata-10
+Xft.lcdfilter: lcddefault
+Xft.dpi:        96
+Xft.antialias:  true
+Xft.rgba:       rgb
+Xft.hinting:    true
+Xft.hintstyle:  hintnone
+
+emacs.FontBackend: xft
+emacs.font: InconsolataLGC-10
 emacs.menuBar: off
 emacs.toolBar: off
 emacs.verticalScrollBars: off
 emacs.horizontalScrollbars: off
-emacs.minibuffer: on
+emacs.minibuffer: none
+emacs.background: #0F0900
+emacs.foreground: #FF8100
+emacs.paneForeground: #0F0900

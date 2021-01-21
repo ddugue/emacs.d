@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-
+kill -9 `cat tmp/process.pid`
 set -e
 rm -fr packages/
 # rm -fr straight/
 # rm -fr elpa/
 find ./layers -name "*.el" -type f -delete
 find ./layers -name "*.elc" -type f -delete
+# find ./straight -name "*.elc" -type f -delete
 rm -f packages.elc

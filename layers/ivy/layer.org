@@ -3,12 +3,14 @@ lists, etc...
 
 [[http://github.com/abo-abo/swiper][Project homepage]]
 
-* Check wether helm or ido is installed
-#+BEGIN_SRC emacs-lisp :tangle config.el
-(when (or (tron/has-layer-p 'ido) (tron/has-layer-p 'helm))
-)
-#+END_SRC
 * Installation
+** Checkup for other completion system
+Right now the way that this layer is built is we allow ONE type of completion engine.
+#+BEGIN_SRC emacs-lisp :tangle install.el
+(when (tron/has-layer-p 'selectrum)
+        (tron/message! "\u2717" :red "Ivy layer is incompatible with the selectrum layer")
+        (kill-emacs 1))
+#+END_SRC
 ** Ivy installation
 #+BEGIN_SRC emacs-lisp :tangle install.el
 ;; Install package ivy
@@ -21,24 +23,12 @@ lists, etc...
 (straight-use-package 'counsel)
 #+END_SRC
 
-** Diminish installation
-#+BEGIN_SRC emacs-lisp :tangle install.el
-;; Install package
-(straight-use-package 'diminish)
-#+END_SRC
 
 * Configuration
-** Librairies
-Librairies to enable globally when loading this layer
-#+BEGIN_SRC emacs-lisp :tangle config.el
-(tron/load-package '(bind-key) 'bind-key)
-(tron/load-package '(diminish) 'diminish)
-#+END_SRC
-
 ** Functions
 *** Custom IVY hydra
 Custom bindings for a custom hydra binding. It adds some functions to our IVY.
-#+BEGIN_SRC emacs-lisp :tangle config.el
+#+BEGIN_SRC emacs-lisp
 (defun my/ivy-get-selection ()
     "Returns the selected ivy text"
     (expand-file-name ivy--current ivy--directory))
@@ -72,68 +62,37 @@ We configure and install ivy, which is the Engine
 (use-package ivy
   :diminish ivy-mode
   :load-path "straight/build/ivy"
-  :commands (ivy-mode)
-  ;; :bind
-  ;; (:map ivy-minibuffer-map
-  ;;   ("C-S-J" . ivy-scroll-down-command)
-  ;;   ("C-j" . ivy-next-line)
-  ;;   ("C-S-K" . ivy-scroll-up-command)
-  ;;   ("C-k" . ivy-previous-line)
-  ;;   ("C-l" . ivy-alt-done)
-  ;;   ("<C-return>" . ivy-immediate-done)
-  ;;   ("C-S-T" . ivy-scroll-down-command)
-  ;;   ("C-t" . ivy-next-line)
-  ;;   ("C-S-H" . ivy-scroll-up-command)
-  ;;   ("C-h" . ivy-previous-line)
-  ;;   ("C-d" . ivy-backward-delete-char)
-  ;;   ("C-s" . ivy-alt-done)
-  ;;   ("<C-return>" . ivy-immediate-done)
-  ;;   ("C-n" . ivy-backward-kill-word))
-  ;; :init
-  ;; (ivy-mode)
-  ;; (add-hook 'after-init-hook #'ivy-mode)
+  :commands (ivy-mode ivy-switch-buffer)
   :config
   (setq ivy-re-builders-alist
-    '((ivy-switch-buffer . ivy--regex-fuzzy)
-      (counsel-find-file . ivy--regex-fuzzy)
-      (t . ivy--regex-plus)))
+        '((ivy-switch-buffer . ivy--regex-fuzzy)
+          (counsel-find-file . ivy--regex-fuzzy)
+          (t . ivy--regex-plus)))
 
   (setq ivy-wrap t)
   (setq ivy-extra-directories nil)
-  (setq ivy-height 25) ;; TODO, make responsive to minibuffer size
-)
-  ;; (progn
-  ;;   ;; Define a custom hydra
-  ;;   (key-chord-define ivy-minibuffer-map "jk"
-  ;;                     (defhydra hydra-ivy/body
-  ;;                               (:post (when
-  ;;                                  (get-register 300)
-  ;;                                  (kill-new (get-register 300))
-  ;;                                  (set-register 300 nil)))
-  ;;                               "ivy"
-  ;;                               ("j" ivy-next-line "down")
-  ;;                               ("k" ivy-previous-line "up")
-  ;;                               ("l" ivy-alt-done "forward")
-  ;;                               ("h" ivy-backward-kill-word "back")
-  ;;                               ("y" my/ivy-append-yank "yank")
-  ;;                               ("m" my/ivy-mark "mark")
-  ;;                               ("Y" my/ivy-override-yank "override")
-  ;;                               ("i" nil "insert")))
-  ;;       (key-chord-define ivy-minibuffer-map "ht"
-  ;;                     (defhydra hydra-ivy/body
-  ;;                               (:post (when
-  ;;                                  (get-register 300)
-  ;;                                  (kill-new (get-register 300))
-  ;;                                  (set-register 300 nil)))
-  ;;                               "ivy"
-  ;;                               ("j" ivy-next-line "up")
-  ;;                               ("k" ivy-previous-line "down")
-  ;;                               ("s" ivy-alt-done "forward")
-  ;;                               ("n" ivy-backward-kill-word "back")
-  ;;                               ("y" my/ivy-append-yank "yank")
-  ;;                               ("m" my/ivy-mark "mark")
-  ;;                               ("Y" my/ivy-override-yank "override")
-  ;;                               ("i" nil "insert")))))
+  (setq ivy-height 28) ;; TODO, make responsive to minibuffer size
+
+  (when (tron/has-feature-p 'dvorak)
+    (general-define-key
+     :keymaps 'ivy-minibuffer-map
+     "C-S-J" 'ivy-scroll-down-command
+     "C-j" 'ivy-next-line
+     "C-S-K" 'ivy-scroll-up-command
+     "C-k" 'ivy-previous-line
+     "C-l" 'ivy-alt-done
+     "<C-return>" 'ivy-immediate-done
+     "C-S-T" 'ivy-scroll-down-command
+     "C-t" 'ivy-next-line
+     "C-S-H" 'ivy-scroll-up-command
+     "C-h" 'ivy-previous-line
+     "C-d" 'ivy-backward-delete-char
+     "C-s" 'ivy-alt-done
+     "<C-return>" 'ivy-immediate-done
+     "C-n" 'ivy-backward-kill-word))
+  :init
+  (ivy-mode 1)
+  )
 
 #+END_SRC
 
@@ -141,25 +100,24 @@ We configure and install ivy, which is the Engine
 We install and configure counsel, which uses ivy and provides some nice default funcions
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
-;; (use-package counsel
-;;   :load-path '("straight/build/counsel" "straight/build/swiper")
-;;   :commands (counsel-find-file locate-file counsel-describe-function ivy-switch-buffer)
-;;   :bind
-;;     (("C-x C-f" . counsel-find-file)
-;;      ("C-x f"   . counsel-find-file))
-;;   :config
-;;   (ivy-mode))
-;;   :config
-;;     (progn
-;;     (ivy-set-display-transformer 'counsel-find-file 'my/ivy-mark-display-transformer)
-;;     (setq counsel-find-file-ignore-regexp
-;;         (concat
-;;          ;; File names beginning with # or .
-;;          "\\(?:\\`[#.]\\)"
-;;          ;; File names ending with # or ~
-;;          "\\|\\(?:\\`.+?[#~]\\'\\)"
-;;          ;; File names ending in .pyc
-;;          "\\|\\(?:\\`.+?\\.pyc\\'\\)"
-;;          ))))
+(use-package counsel
+  :load-path ("straight/build/counsel" "straight/build/swiper")
+  :commands (counsel-find-file counse-locate counsel-describe-function counsel-describe-variable counsel-describe-face counsel-ag counsel-M-x swiper)
+:init
 
+  :config
+    (setq counsel-find-file-ignore-regexp
+        (concat
+         ;; File names beginning with # or .
+         "\\(?:\\`[#.]\\)"
+         ;; File names ending with # or ~
+         "\\|\\(?:\\`.+?[#~]\\'\\)"
+         ;; File names ending in .pyc
+         "\\|\\(?:\\`.+?\\.pyc\\'\\)"
+         ;; File names ending in .elc
+         "\\|\\(?:\\`.+?\\.elc\\'\\)"
+         ;; File names ending in .eln
+         "\\|\\(?:\\`.+?\\.eln\\'\\)"
+         ))
+)
 #+END_SRC

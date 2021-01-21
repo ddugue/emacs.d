@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t -*-
 ;; File to work with packages
 
 ;; Script to bootstrap straight.el
@@ -17,10 +18,31 @@
         (goto-char (point-max))
         (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
-  (straight-use-package 'use-package))
+  (straight-use-package 'use-package)
+  ;; (advice-add 'use-package-handler/:commands :override 'my/use-package-handler/:commands)
+  ;; We override the use-package command handler in order to support
+  ;; Straight package AND have deferred load too.
+  )
+  ;; (setq straight-use-package-by-default t))
 
-
-
+(defun my/use-package-handler/:commands (name _keyword arg rest state)
+  (use-package-concat
+   ;; Since we deferring load, establish any necessary autoloads, and also
+   ;; keep the byte-compiler happy.
+   (let* ((name-string (use-package-as-string name))
+          (full-name (expand-file-name (concat "straight/build/" name-string "/" name-string) user-emacs-directory)))
+     (cl-mapcan
+      #'(lambda (command)
+          (when (symbolp command)
+            (append
+             (unless (plist-get state :demand)
+               `((unless (fboundp ',command)
+                   (autoload #',command ,(if (file-exists-p (concat full-name ".el")) full-name name-string) nil t))))
+             (when (bound-and-true-p byte-compile-current-file)
+               `((eval-when-compile
+                   (declare-function ,command ,name-string)))))))
+      (delete-dups arg)))
+   (use-package-process-keywords name rest state)))
 ;; Feature setter
 ;; Set the different features and global package list
 ;; Doesn't do anything by itself
@@ -67,36 +89,86 @@
   (memq layer tron-layers))
 
 ;; Utilities to work with layers
+(defun tron/layer-folder (layer)
+  (let ((layer-name (or (and (symbolp layer) (symbol-name layer)) layer)))
+    (concat user-emacs-directory "layers/" layer-name)))
+
 (defun tron/layer-file (layer &optional file)
   "Return a layer file based on the layer and the file"
   (let ((layer-name (or (and (symbolp layer) (symbol-name layer)) layer)))
-    (concat user-emacs-directory "layers/" layer-name "/" file)))
+    (concat (tron/layer-folder layer) "/" file)))
 
-(defun tron/package-folder (package)
+(defun tron/package-folder (&optional package)
   "Return a package folder"
-  (concat user-emacs-directory "straight/build/" (symbol-name package)))
+  (concat user-emacs-directory "straight/build/" (when package (symbol-name package))))
+
+(defun add-tangle-headers ()
+  (cond
+   ((string= (file-name-extension (buffer-file-name)) "el")
+    (goto-char (point-min))
+    (insert ";;; -*- lexical-binding: t -*-\n"))
+   (t
+    nil))
+  (save-buffer))
+
+(defvar current-package nil)
+(defun add-tangle-footer ()
+  (cond
+   ((string= (tron/get-filename (buffer-file-name)) "config.el")
+    (goto-char (point-max))
+    (insert (concat "\n(provide 'tron/" current-package ")\n")))
+   (t
+    nil))
+  (save-buffer))
 
 ;; Compile a layer .org files into its .el files
-(defun tron/compile-layer (layer)
-  "Function to compile a layer org file into the different el files"
+(defun tron/tangle-layer (layer)
+  "Function to tangle a layer org file into the different el files"
   (require 'org)
+  (add-hook 'org-babel-post-tangle-hook 'add-tangle-headers)
+  (add-hook 'org-babel-post-tangle-hook 'add-tangle-footer)
+  (let ((layer-file (tron/layer-file layer "layer.org")))
+    (setq current-package (symbol-name layer))
+    (if (not (file-exists-p layer-file))
+        (tron/message! "\u2717" :red "Could not tangle %s (%s not found)" layer layer-file)
+      (let ((inhibit-message (not (getenv "DEBUG"))))
+
+          (org-babel-tangle-file layer-file))
+      (tron/message! "\u2714" :green "Tangled %s layer" layer))))
+
+(defun tron/compile-layer (layer)
+  "Function to natively compile el files"
+  (defun warn-highjack (oldfun type message &optional level buffer-name)
+    (if (equal level :error)
+        (progn
+          (let ((inhibit-message nil))
+            (tron/message! "\u2717" :red "Could not compile %s (%s)" layer message))
+          (kill-emacs 1))
+      (funcall oldfun type message level buffer-name)))
+  (advice-add #'display-warning :around #'warn-highjack)
   (let ((layer-file (tron/layer-file layer "layer.org")))
     (if (not (file-exists-p layer-file))
         (tron/message! "\u2717" :red "Could not compile %s (%s not found)" layer layer-file)
-        (let ((inhibit-message t))
-          (org-babel-tangle-file layer-file)
-          (unless (getenv "DEBUG")
-            (tron/load-package '(use-package bind-key) 'use-package)
-            (byte-recompile-directory (tron/layer-file layer) 0)))
+      (let ((inhibit-message (not (getenv "DEBUG")))
+            (file (tron/layer-file layer "config")))
+        (condition-case err
+            (progn
+              (native-compile (concat file ".el") (concat file ".eln"))
+              (require `,(intern (concat "tron/" (symbol-name layer))) (concat file ".eln"))
+              (tron/message! "\u2714" :green "Compiled %s layer" layer))
+          (t (tron/message! "\u2717" :red "Could not compile %s (%s)" layer err) (kill-emacs 1))
+          )
+      ))))
 
-        (tron/message! "\u2714" :green "Compiled %s layer" layer))))
 
 ;; Install a layer based on its .el or .elc file
 (defun tron/install-layer (layer)
   "Function to install a layer"
   (let* ((install-file (tron/layer-file layer "install"))
          (el-file (concat install-file ".el"))
-         (elc-file (concat install-file ".elc")))
+         (elc-file (concat install-file ".elc"))
+         )
+
     (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
         (tron/message! "\u2717" :red "Could not install %s (%s not found)" layer el-file)
       (let ((inhibit-message (not (getenv "DEBUG"))))
@@ -105,18 +177,33 @@
 
 ;; Install a layer based on its .el or .elc file
 (defun tron/load-layer (layer)
-  "Function to load a layer"
-  (let* ((install-file (tron/layer-file layer "config"))
-         (el-file (concat install-file ".el"))
-         (elc-file (concat install-file ".elc")))
-    (if (not (or (file-exists-p el-file) (file-exists-p elc-file)))
-        (tron/message! "\u2717" :red "Could not load %s (%s not found)" layer el-file)
-      (load install-file))))
+  "Load a layer"
+  (let ((file (concat (tron/layer-file layer "config") ".el" (unless (getenv "DEBUG") "n"))))
+    (when (getenv "DEBUG") (message "Loading %s..." file))
+    (if (not (file-exists-p file))
+        (tron/message! "\u2717" :red "Could not load %s (%s not found)" layer file)
+      (require `,(intern (concat "tron/" (symbol-name layer))) file)
+  )))
 
 ;; Utilities to work with packages
-(defun tron/load-package (dependencies package)
-  (let ((load-path (append load-path (mapcar 'tron/package-folder dependencies))))
-    (message "Load path is %s" load-path)
-    (require package)))
+(defun tron/get-filename (str)
+  "Return the filename of a filepath"
+  (let ((split-path (split-string str "/")))
+    (car (last split-path))))
+
+(defun tron/compile-libraries ()
+  (native-compile-async (tron/package-folder) 'recursively nil
+                        (lambda (f)
+                          (let* ((folder (string-remove-prefix (tron/package-folder) f))
+                                 (filename (tron/get-filename folder)))
+                            (if
+                                (or
+                                 (string= ".dirs-locals.el" filename)
+                                 (string-suffix-p "autoloads.el" filename))
+                                (progn
+                                  nil)
+                              t)
+                          ))))
+
 
 (provide 'tron-packages)

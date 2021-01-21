@@ -1,0 +1,53 @@
+Represent a layer to edit ELisp
+
+* Installation
+** Highlight-parentheses Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package elisp
+(straight-use-package 'highlight-parentheses)
+#+END_SRC
+
+* Configuration
+** Highlight parentheses
+#+BEGIN_SRC emacs-lisp :tangle config.el
+  (use-package highlight-parentheses
+    :load-path "straight/build/highlight-parentheses"
+    :hook (emacs-lisp-mode . highlight-parentheses-mode)
+    :commands highlight-parentheses-mode
+    :diminish highlight-parentheses-mode
+    :config
+    (setq highlight-parentheses-highlight-adjacent t)
+
+    ;; THEME DEPENDANT.
+    (setq highlight-parentheses-colors '("#CC99CC"))
+)
+#+END_SRC
+
+** Matching parentheses
+#+BEGIN_SRC emacs-lisp :tangle config.el
+  (use-package elec-pair
+    :hook (emacs-lisp-mode . electric-pair-mode)
+    :config
+    (setq electric-pair-delete-adjacent-pairs nil))
+#+END_SRC
+
+** elisp Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package elisp-mode
+  :mode ("\\.el\\'" . emacs-lisp-mode)
+  :config
+  ;; We want to load use-package so this way it hightlights
+  ;; We are always using
+  (add-to-list 'load-path "/home/ddugue/new-emacs/straight/build/use-package")
+  (add-to-list 'load-path "/home/ddugue/new-emacs/straight/build/bind-key")
+  (require 'use-package)
+  (require 'bind-key)
+
+  ;; (straight-use-package 'use-package)
+
+  ;; (defvar electric-pair-delete-adjacent-pairs nil)
+  ;; (make-variable-buffer-local 'electric-pair-mode)
+  ;; (electric-pair-mode 1)
+  ;; (highlight-parentheses-mode 1)
+)
+#+END_SRC

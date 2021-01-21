@@ -1,0 +1,138 @@
+Layer for buffer and window management
+
+* Configuration
+** Close popups
+More often than not we want to close those nasty popups and go back to work!
+#+BEGIN_SRC emacs-lisp :tangle config.el
+;; (defconst popup-buffers '("^[mM]agit.*$"))
+;; (defun my/close-popup ()
+;;   (interactive)
+;;   (when (cl-some `(lambda (regex) (string-match-p regex (buffer-name))) popup-buffers)
+;;   (kill-buffer-and-window)))
+
+
+(general-define-key
+  :states '(emacs)
+  "ESC" 'kill-buffer-and-window
+  "TAB" 'other-window
+)
+
+
+(general-define-key
+  :states '(normal)
+  "TAB" 'other-window)
+#+END_SRC
+
+** Make the minibuffer in a separate frame
+README: I've moved this to the early-init.el in order to avoid flash of the GUI.
+#+BEGIN_SRC emacs-lisp :tangle config.el
+;; Force initial frame to not have any minibuffer
+;; (setq initial-frame-alist '((name . "editor") (minibuffer . nil)))
+;; (add-to-list 'default-frame-alist '(minibuffer . nil))
+#+END_SRC
+
+** One per frame configuration Configuration
+We want to ensure that some buffer spawns in a dedicated 'info' frame
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defconst info-buffers '("^\\*[mM]essages.*$" "^\\*[hH]elp.*$" "^\\*[mM]agit.*$" "^\\*[Ff]lycheck.*$" "^\\*lsp-help.*$"))
+(defun my/switch-to-buffer (buffer-or-name)
+  "Switch to a different buffer"
+  (interactive "BSwitch to buffer: ")
+  (if (cl-some `(lambda (regex) (string-match-p regex ,buffer-or-name)) info-buffers)
+      (pop-to-buffer buffer-or-name)
+    (switch-to-buffer buffer-or-name)))
+
+(defun my/matchframe (frame)
+  (when (equal "help" (frame-parameter frame 'name)) frame))
+
+(use-package window
+  :after general
+  :config
+  (let ((buffer-config (cons '(display-buffer-reuse-window display-buffer-use-some-frame display-buffer-pop-up-frame)
+                             '((reusable-frames . t)
+                               (frame-predicate . my/matchframe)
+                               (pop-up-frame-parameters . ((name . "help")
+                                                           (minibuffer . nil)
+                                                           (unsplittable . t)))))))
+    (mapc (lambda (regex) (add-to-list 'display-buffer-alist `(,regex . ,buffer-config))) info-buffers)))
+
+#+END_SRC
+
+** Kill all buffers
+Elisp function to kill all other opened buffers
+
+#+BEGIN_SRC emacs-lisp  :tangle config.el
+(defun my/kill-other-buffers ()
+  "Kill all other buffers"
+  (interactive)
+  (mapc 'kill-buffer (delq (current-buffer) (buffer-list))))
+
+#+END_SRC
+
+** Switch to last buffer
+Easy switch to last opened buffer
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun spacemacs/alternate-buffer (&optional window)
+  "Switch back and forth between current and last buffer in the
+current window."
+  (interactive)
+  (let ((current-buffer (window-buffer window))
+        (buffer-predicate
+         (frame-parameter (window-frame window) 'buffer-predicate)))
+    ;; switch to first buffer previously shown in this window that matches
+    ;; frame-parameter `buffer-predicate'
+    (switch-to-buffer
+     (or (cl-find-if (lambda (buffer)
+                       (and (not (eq buffer current-buffer))
+                            (or (null buffer-predicate)
+                                (funcall buffer-predicate buffer))))
+                     (mapcar #'car (window-prev-buffers window)))
+         ;; `other-buffer' honors `buffer-predicate' so no need to filter
+         (other-buffer current-buffer t)))))
+
+#+END_SRC
+
+** Autoclosing buffers
+I usually end up with lots of buffers floating around. So i took this script from:
+[https://www.emacswiki.org/emacs/KillingBuffers#toc12]
+
+It autocloses my saved buffers every hour (initially every 2 hours)
+#+BEGIN_SRC emacs-lisp :tangle config.el
+;;; midnight mode
+
+(require 'midnight)
+
+;;kill buffers if they were last disabled more than this seconds ago
+(setq clean-buffer-list-delay-special 900)
+
+(defvar clean-buffer-list-timer nil
+  "Stores clean-buffer-list timer if there is one.
+   You can disable clean-buffer-list by (cancel-timer clean-buffer-list-timer).")
+
+;; run clean-buffer-list every 2 hours
+(setq clean-buffer-list-timer (run-at-time t 3600 'clean-buffer-list))
+
+;; kill everything, clean-buffer-list is very intelligent at not killing
+;; unsaved buffer.
+(setq clean-buffer-list-kill-regexps '("^.*$"))
+
+;; keep these buffer untouched
+;; prevent append multiple times
+(defvar clean-buffer-list-kill-never-buffer-names-init
+  clean-buffer-list-kill-never-buffer-names
+  "Init value for clean-buffer-list-kill-never-buffer-names")
+(setq clean-buffer-list-kill-never-buffer-names
+      (append
+       '("*Messages*" "*cmd*" "*scratch*" "*w3m*" "*w3m-cache*" "*Inferior Octave*")
+       clean-buffer-list-kill-never-buffer-names-init))
+
+;; prevent append multiple times
+(defvar clean-buffer-list-kill-never-regexps-init
+  clean-buffer-list-kill-never-regexps
+  "Init value for clean-buffer-list-kill-never-regexps")
+;; append to *-init instead of itself
+(setq clean-buffer-list-kill-never-regexps
+      (append '("^\\*EMMS Playlist\\*.*$")
+	      clean-buffer-list-kill-never-regexps-init))
+#+END_SRC

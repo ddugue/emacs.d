@@ -1,0 +1,149 @@
+Our basic completion framework is principally composed of selectrum
+which replaces our completing-read function to something more friendly.
+
+Then we have some tools via consult which replaces some utilities
+like the default search line.
+
+* Installation
+** Checkup for other completion system
+Right now the way that this layer is built is we allow ONE type of completion engine.
+#+BEGIN_SRC emacs-lisp :tangle install.el
+(when (tron/has-layer-p 'ivy)
+        (tron/message! "\u2717" :red "Ivy layer is incompatible with the selectrum layer")
+        (kill-emacs 1))
+** Selectrum Installation
+[[https://github.com/raxod502/selectrum][Project Homepage]]
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package selectrum
+(straight-use-package 'selectrum)
+#+END_SRC
+** Consult installation
+[[https://github.com/minad/consult][Project Homepage]]
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package consult
+(straight-use-package 'consult)
+(straight-use-package 'consult-selectrum)
+#+END_SRC
+
+* Configuration
+** Selectrum Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun my/go-back-to-slash ()
+  "Delete up until a forward slash"
+  (interactive)
+  (zap-to-char (if (equal (char-before) ?/) -2 -1) ?/)
+  (insert "/"))
+
+(defun my/go-to-next-line-cycle ()
+  "Go to next line or cycle when at bottom"
+  (interactive)
+  (let ((nbcandidates (length selectrum--refined-candidates)))
+    (if (equal (1- nbcandidates) selectrum--current-candidate-index)
+        (selectrum-goto-beginning)
+      (selectrum-next-candidate))))
+
+(defun my/go-to-previous-line-cycle ()
+  "Go to previous line or cycle when at top"
+  (interactive)
+  (if (equal 0 selectrum--current-candidate-index)
+      (selectrum-goto-end)
+    (selectrum-previous-candidate)))
+
+
+(defun my/filename-good-p (fn)
+  "check if given filename FN is good for completion reads (and should not be ignored
+according to `completion-ignored-extensions')."
+  (message "Checking %s" fn)
+  (if (length selectrum--refined-candidates)
+  (not (seq-contains-p completion-ignored-extensions (file-name-extension fn t))))
+
+(defun my/advice-selectrum-read-file-name (oldfun prompt &optional dir default-filename mustmatch initial predicate)
+  "advice making `selectrum-read-file-name' honoring `completion-ignored-extensions'."
+  (let* ((predicate-new (if predicate
+			    (lambda (fn) (and (funcall predicate fn)
+					      (my/filename-good-p fn)))
+			  #'my/filename-good-p)))
+    (funcall oldfun prompt dir default-filename mustmatch initial predicate-new)))
+
+(use-package selectrum
+  :load-path "straight/build/selectrum"
+  :init
+  (setq enable-recursive-minibuffers t)
+  :config
+  (selectrum-mode +1)
+  (setq selectrum-num-candidates-displayed 28)
+  (general-define-key
+   :keymaps 'minibuffer-local-map
+   "<C-return>" 'selectrum-submit-exact-input
+   "C-s" 'selectrum-insert-current-candidate
+   "C-d" 'my/go-back-to-slash
+   "C-t" 'my/go-to-next-line-cycle
+   "C-h" 'my/go-to-previous-line-cycle
+  )
+  (advice-add #'selectrum-read-file-name :around #'my/advice-selectrum-read-file-name)
+)
+#+END_SRC
+
+** File and buffer management
+*** Keybindings
+We use general to set up some base keybindings for files and buffer management
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package files
+  :after general
+  :config
+  (bind-leader
+   "ff" 'find-file))
+#+END_SRC
+
+** Help
+*** Keybindings
+We use general to set up some base keybindings help command
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package help-fns
+  :after general
+  :config
+  (bind-leader
+   "hf" 'describe-function
+   "hF" 'describe-function
+   "hv" 'describe-variable
+   "hh" 'describe-function
+   "hk" 'describe-key))
+#+END_SRC
+** Consult configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+;; (progn
+;;   (eval-and-compile
+;;     (add-to-list 'load-path "/home/ddugue/new-emacs/straight/build/consult"))
+;;   (defvar use-package--warning11
+;;     #'(lambda
+;; 	(keyword err)
+;; 	(let
+;; 	    ((msg
+;; 	      (format "%s/%s: %s" 'consult keyword
+;; 		      (error-message-string err))))
+;; 	  (display-warning 'use-package msg :error))))
+;;   (condition-case-unless-debug err
+;;       (unless
+;; 	  (fboundp 'consult-line)
+;; 	(autoload #'consult-line "/home/ddugue/new-emacs/straight/build/consult/consult" nil t))
+;;     (error
+;;      (funcall use-package--warning11 :catch err))))
+
+(use-package consult
+  :commands consult-line
+  :load-path "straight/build/consult"
+)
+
+   ;;  :keymaps '(evil-normal-state-map evil-motion-state-map)
+   ;; "/" 'consult-line
+   ;; "é" 'consult-line))
+  ;; ("/" 'consult-line
+  ;; "é" 'consult-line)
+
+;; consult-line)
+
+(general-define-key
+   :keymaps '(evil-normal-state-map evil-motion-state-map)
+  "/" 'consult-line
+  "é" 'consult-line)
+#+END_SRC

@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
 set -e
-if [ $# -eq 0 ]
-  then
-    emacs -q -l init.el --batch --execute "(tron/compile)"
+export DEBUGFLAG=""
+if [ -z "$DEBUG" ]; then
+    export DEBUGFLAG=--debug-init
+fi
+if [ $# -eq 0 ]; then
+    emacs -q $DEBUGFLAG -l init.el --batch --execute "(tron/compile)"
 else
-    emacs -q -l init.el --batch --execute "(tron/compile '$1)"
+    emacs -q $DEBUGFLAG -l init.el --batch --execute "(tron/compile '$1)"
 fi

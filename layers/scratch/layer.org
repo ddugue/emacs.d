@@ -1,0 +1,55 @@
+This layer has the purpose of redifening the scratch-buffer
+
+* Custom Scratch mode
+#+BEGIN_SRC emacs-lisp :tangle scratch.el
+(setq mymath-highlights
+      `(("```" . font-lock-comment-face)
+        ("===" . font-lock-builtin-face)
+        (,(rx "\"" (group (0+ (or (1+ (not (any "\"" "\\"))) (seq "\\" anything)))) "\"") . font-lock-string-face)
+        (,(rx "'" (group (0+ (or (1+ (not (any "'" "\\"))) (seq "\\" anything)))) "'") . font-lock-string-face)
+        (,(rx (and
+               symbol-start
+               digit
+               (*? any)
+               symbol-end)) . font-lock-constant-face)))
+
+(defun eval-python ()
+  "Eval the current buffer with 'eval.py'"
+  (interactive)
+  (shell-command-on-region
+     (point-min)
+     (point-max)
+     "/home/ddugue/eval.py" nil t))
+
+(define-derived-mode scratch-mode text-mode "Scratch"
+  "major mode for editing mymath language code."
+  (setq font-lock-defaults '(mymath-highlights)))
+
+(provide 'scratch)
+#+END_SRC
+
+* Configuration
+** scratch Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+
+;; (use-package highlight-numbers
+;;     :commands (highlight-numbers-mode))
+(use-package scratch
+  :load-path "layers/scratch"
+  :commands scratch-mode
+  :init
+  (add-hook 'scratch-mode-hook (lambda ()
+                                 (bind-local "," 'eval-python)))
+  (setq initial-major-mode 'scratch-mode)
+  (when (equal (buffer-name) "*scratch*") (scratch-mode))
+  ;; Be careful initial scratch-message gets scrambled by
+  ;; substitue-command-keys
+  (setq initial-scratch-message "\
+This buffer is for notes you don't want to save, and for Python code.
+You can have some interactive code between the upticks.
+
+\\=`\\=`\\=`
+a = 0
+\\=`\\=`\\=`")
+  )
+#+END_SRC

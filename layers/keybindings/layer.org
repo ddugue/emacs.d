@@ -1,0 +1,110 @@
+This layer is to group all the keybindings in one place.
+It makes it easier to group them all here and then to evaluate
+what can be added/removed.
+
+Of course only global keybindings are here, local ones are on their layers.
+
+* Installation
+** Which-key
+Installation of the Which key package which displays keybindings in the
+minibuffer. This allow self-discoverability of key bindings
+[[https://github.com/justbur/emacs-which-key][Project Homepage]]
+
+#+BEGIN_SRC emacs-lisp :tangle install.el
+(straight-use-package 'which-key)
+#+END_SRC
+** General
+Installation of the General Macro which makes it much easier to define
+keybinding and function binding for loading
+[[https://github.com/noctuid/general.el][Project Homepage]]
+
+#+BEGIN_SRC emacs-lisp :tangle install.el
+(straight-use-package 'general)
+#+END_SRC
+* Configuration
+** General
+We use general to set up some base keybindings for files and buffer management
+Ideally, this should be loaded first. Order is important here (because of straight). Then after
+we can use something like this:
+#+BEGIN_SRC emacs-lisp
+;; SHOULD NOT BE TANGLED:
+;; THIS IS AN EXAMPLE
+(use-package foo
+  :straight nil
+  :after general
+  :config
+  (bind-leader
+   "x"  '(:ignore t :which-key "Foo")
+   "xx" 'foo))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defconst leader-key "SPC" "Keybinding used for global specific binding")
+(defconst non-evil-leader-key "C-SPC" "Keybinding used for global specific binding (when not normal evil mode)")
+(defconst mode-leader-key "," "Keybinding used for mode specific binding")
+(defconst non-evil-mode-leader-key "C-," "Keybinding used for mode specific binding")
+
+(use-package general :load-path "straight/build/general")
+
+(general-create-definer bind-leader
+  :states '(motion insert emacs)
+  :prefix leader-key
+  :non-normal-prefix non-evil-leader-key)
+
+(general-create-definer bind-local
+  :keymaps 'local
+  :states '(normal insert emacs)
+  :prefix mode-leader-key
+  :non-normal-prefix non-evil-mode-leader-key)
+#+END_SRC
+
+** keybindings Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package which-key
+  :load-path "straight/build/which-key"
+  :diminish which-key-mode
+  :config
+  (which-key-setup-minibuffer)
+  (which-key-mode 1)
+
+  (bind-leader
+
+   "h"  '(:ignore t :which-key "Help")
+   "hk" 'describe-key
+   "hK" 'general-describe-keybindings
+   "hf" (if (tron/has-layer-p 'ivy) 'counsel-describe-function 'describe-function)
+   "hv" (if (tron/has-layer-p 'ivy) 'counsel-describe-variable 'describe-variable)
+   "hF" (if (tron/has-layer-p 'ivy) 'counsel-describe-face 'describe-face)
+   "ht" 'describe-text-properties
+
+   "b"  '(:ignore t :which-key "Buffers")
+   "bb" (if (tron/has-layer-p 'ivy) 'ivy-switch-buffer 'my/switch-to-buffer)
+   "bd" 'evil-delete-buffer
+   "bc" 'my/kill-other-buffers
+   "br" 'revert-buffer
+   "TAB" 'spacemacs/alternate-buffer
+
+   "f"  '(:ignore t :which-key "Files")
+   "ff" (if (tron/has-layer-p 'ivy) 'counsel-find-file 'find-file)
+   "fl" (if (tron/has-layer-p 'ivy) 'counsel-locate 'locate)
+
+   ;; Inserts
+   "i" '(:ignore t :which-key "Inserts")
+   "ic" 'insert-char
+
+   "/" 'my/git-ag) ;; Search
+
+  (when (tron/has-layer-p 'project)
+    (bind-leader
+     ;; Project
+     "g"  '(:ignore t :which-key "Projects")
+     "gg" 'magit-status))
+  )
+
+(when (tron/has-layer-p 'ivy)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (general-define-key
+   :keymaps '(evil-normal-state-map evil-motion-state-map)
+
+   "/" 'swiper))
+#+END_SRC

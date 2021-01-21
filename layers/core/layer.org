@@ -1,8 +1,6 @@
 In this layer we try to set up all the bare minimum necessary configurations
 to edit basic files
 
-TODO: Add general to define keys
-
 
 * Installation
 ** Use-package
@@ -12,19 +10,24 @@ Installation and configuration of the use-package macro
 
 #+BEGIN_SRC emacs-lisp :tangle install.el
 ;; Install package use-package
-(straight-use-package 'use-package)
+;; (straight-use-package 'use-package)
 #+END_SRC
 
 We use straight.el, this way, we do note depend on the packages.el, also
 it would be possible to install any version (from git, melpa, etc...)
 ** Evil
 Installation of the eVIl package, essential to the workflow
-
 [[https://github.com/emacs-evil/evil][Project Homepage]]
 
 #+BEGIN_SRC emacs-lisp :tangle install.el
-;; Install package use-package
 (straight-use-package 'evil)
+#+END_SRC
+** Evil commentary
+Installation of evil commentary to add binding for commenting lines
+[[https://github.com/linktohack/evil-commentary][Project homepage]]
+
+#+BEGIN_SRC emacs-lisp :tangle install.el
+(straight-use-package 'evil-commentary)
 #+END_SRC
 
 ** Key Chord
@@ -42,44 +45,89 @@ We also want to install key seq to get the order of the keystrokes
 #+BEGIN_SRC emacs-lisp :tangle install.el
 (straight-use-package 'key-seq)
 #+END_SRC
-
+** Diminish
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package
+(straight-use-package 'diminish)
+#+END_SRC
 * Configuration
 Configuration file is loaded when emacs is run as an editor
 ** Librairies
-Librairies that should be in the global scope
+Librairies that should be in the global scope. Here we talk about ELisp libraries that should
+be loaded all the time.
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(require 'cl-lib)
+#+END_SRC
 
 ** Visual preferences
-UI Enhancements and preferences
-*** Disable scrollbar
+*** UI Enhancements and preferences
+**** Disable scrollbar
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (scroll-bar-mode -1)
 #+END_SRC
-*** Disable menubar
+**** Disable menubar
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (menu-bar-mode -1)
 #+END_SRC
-*** Disable toolbar
+**** Disable toolbar
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (tool-bar-mode -1)
 #+END_SRC
-*** Disable splash screen
+**** Disable splash screen
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (setq inhibit-startup-screen t)
 #+END_SRC
-*** Highlight line
+**** Show line numbers
+#+BEGIN_SRC emacs-lisp :tangle config.el
+  (setq display-line-numbers-type 'relative)
+  (setq display-line-numbers-current-absolute t)
+  (global-display-line-numbers-mode t)
+
+#+END_SRC
+
+**** Highlight line
 We also want to highlight the current line by default
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
 ;; Enable highlighting current line for all modes
 (global-hl-line-mode 1)
 #+END_SRC
+**** Highlight the fill column
+We want to show an indicator for 100 char (80 is too little, 100 is more reasonable
+#+BEGIN_SRC emacs-lisp :tangle config.el
 
+;; (add-hook 'after-make-frame-functions
+    ;; (lambda (frame)
+      ;; (set-fontset-font t 'unicode (font-spec :family "Inconsolata") nil 'prepend)))
+  ;; (set-fontset-font "fontset-default" 'unicode "Inconsolata")
+  (setq-default fill-column 100)
+  (setq column-number-mode t)
+  (setq-default display-fill-column-indicator-character ?\u2502)
+  (add-hook 'prog-mode-hook #'display-fill-column-indicator-mode)
+#+END_SRC
+
+
+** Change location of auto-saves
+We wanna change the default location of temporary files to a temporary directory
+#+BEGIN_SRC emacs-lisp :tangle config.el
+
+;; Change default location of temporary files
+(setq backup-directory-alist
+          `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+          `((".*" ,temporary-file-directory t)))
+#+END_SRC
+** Change yes or no to y or n
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(fset 'yes-or-no-p 'y-or-n-p) ;; Yes or no questions become Y or n questions
+#+END_SRC
 ** Evil
 We want to enable evil globally
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (use-package evil
   :load-path "straight/build/evil"
+  :after general
   :config
   (evil-mode 1)
 
@@ -97,37 +145,53 @@ We want to enable evil globally
     (define-key evil-motion-state-map "t" 'evil-next-line)
     (define-key evil-motion-state-map "n" 'evil-backward-char)
     (define-key evil-motion-state-map "s" 'evil-forward-char)
+    (define-key evil-normal-state-map "s" 'evil-forward-char)
 
     (define-key evil-motion-state-map "l" 'evil-search-next)
     (define-key evil-motion-state-map "L" 'evil-search-backward)
-    (define-key evil-normal-state-map "j"
-      #'(lambda () (join-line 1))))
+    (define-key evil-normal-state-map "j" #'(lambda () (interactive) "join this line at the end of the line below" (join-line 1))))
 
   (define-key evil-normal-state-map "J" 'join-line)
   ;; (define-key evil-normal-state-map "s" 'evil-forward-char)
 
   (define-key evil-insert-state-map (kbd "C-d") 'evil-delete-backward-char)
+  ;; (define-key minibuffer-local-map (kbd "C-d") 'delete-backward-char)
+  ;; (define-key minibuffer-local-completion-map (kbd "C-d") 'delete-backward-char)
+
+  (general-define-key
+   :keymaps '(evil-normal-state-map evil-motion-state-map)
+   ;; Folding
+   ";" 'evil-commentary
+   "za" 'evil-close-folds
+   "zz" 'evil-toggle-fold)
   )
 #+END_SRC
+
+*** Evil commentary
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package evil-commentary :commands (evil-commentary))
+#+END_SRC
+
 ** Key-Chord
 Key chord is an extension to create two key strokes shortcut. Quite useful.
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (use-package key-seq
-    :load-path "straight/build/key-seq"
-    :commands (key-seq-define))
+  :load-path "straight/build/key-seq"
+  :commands (key-seq-define))
 
 (use-package key-chord
-    :load-path "straight/build/key-chord"
-    :config
-    (setq key-chord-two-keys-delay 0.1) ;; default 0.1
-    (setq key-chord-one-key-delay 0.2) ;; default 0.2
-    (key-chord-mode 1)
-    (when (tron/has-feature-p 'dvorak)
-      (key-seq-define evil-insert-state-map "ht" 'evil-normal-state)
-      (key-seq-define evil-replace-state-map "ht" 'evil-normal-state))
-    (unless (tron/has-feature-p 'dvorak)
-      (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
-      (key-chord-define evil-replace-state-map "jk" 'evil-normal-state))
-)
+  :load-path "straight/build/key-chord"
+  :after tron/keybindings
+  :config
+  (setq key-chord-two-keys-delay 0.1) ;; default 0.1
+  (setq key-chord-one-key-delay 0.2) ;; default 0.2
+  (key-chord-mode 1)
+  (when (tron/has-feature-p 'dvorak)
+    (key-seq-define evil-insert-state-map "ht" 'evil-normal-state)
+    (key-seq-define evil-replace-state-map "ht" 'evil-normal-state))
+  (unless (tron/has-feature-p 'dvorak)
+    (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+    (key-chord-define evil-replace-state-map "jk" 'evil-normal-state))
+  )
 #+END_SRC

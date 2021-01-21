@@ -1,0 +1,118 @@
+This is the layer header. Please change text here to explain what it should do.
+[[<URI>][Project Homepage] ]
+
+* Installation
+** Projectile Installation
+Projectile is a package with some project utilities, like search.
+[[https://github.com/bbatsov/projectile][Project Homepage]]
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package project
+(straight-use-package 'projectile)
+#+END_SRC
+** Magit Installation
+Magit is one of the best thing about emacs. It is such a nice interface to Git.
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package project
+(straight-use-package 'magit)
+#+END_SRC
+
+* Configuration
+** Projectile Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package projectile
+  :load-path "straight/build/projectile"
+  :commands (projectile-project-p))
+#+END_SRC
+
+** Git configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun evil-magit/toggle (&optional intent)
+  "Toggle the stage instead of moving it manually"
+  (interactive "P")
+  (pcase (magit-diff-type)
+    ('unstaged (magit-stage intent))
+    ('commited (magit-unstage))
+    ('untracked (magit-stage intent))
+    ('staged (magit-unstage))
+    ('undefined (user-error "Cannot toggle"))))
+
+(use-package magit
+  :load-path ("straight/build/magit"
+              "straight/build/dash"
+              "straight/build/with-editor"
+              "straight/build/git-commit"
+              "straight/build/transient")
+  ;; :defer 10
+  :commands (magit-status)
+  :config
+
+(defconst magit-keymaps '(magit-status-mode-map magit-log-mode-map magit-revision-mode-map))
+  (when (tron/has-feature-p 'dvorak)
+    (general-define-key
+     :keymaps magit-keymaps
+     "t" 'magit-section-forward
+     "h" 'magit-section-backward
+     "T" 'magit-section-forward-sibling
+     "H" 'magit-section-backward-sibling
+))
+
+  (unless (tron/has-feature-p 'dvorak)
+    (general-define-key
+     :keymaps magit-keymaps
+     "j" 'magit-section-forward
+     "k" 'magit-section-backward
+     "J" 'magit-section-forward-sibling
+     "K" 'magit-section-backward-sibling))
+
+  (general-define-key
+   :keymaps magit-keymaps
+   "v" 'evil-magit/toggle
+   "zz" 'magit-section-toggle
+   "d" 'magit-discard
+   "G" 'evil-goto-line
+   "gg" 'evil-goto-first-line
+   "SPC" (general-key "C-SPC")
+)
+
+  (general-define-key
+   :keymaps 'with-editor-mode-map
+   "<C-return>" 'with-editor-finish)
+
+  (general-define-key
+    :keymaps 'magit-status-mode-map
+    :prefix ","
+    "m"  'magit-merge
+    "c"  'magit-commit-create
+    "a"  'magit-commit-amend
+    "C"  'magit-commit-popup
+    "P"  'magit-push-popup
+    "pp" 'magit-push-current-to-upstream
+    "F"  'magit-pull-popup
+    "ff" 'magit-pull-from-upstream
+    "bb" 'magit-checkout
+    "bc" 'magit-branch-and-checkout
+    "B"  'magit-branch-popup
+    "r"  'magit-refresh
+    "i"  'magit-gitignore-in-topdir
+   )
+
+  )
+#+END_SRC
+
+** Set default directory to projects dir
+We want the default directory to be our projects Dir
+#+BEGIN_SRC emacs-lisp :tangle config.el
+  (setq default-directory "~/Projects/")
+#+END_SRC
+
+** Search in project
+Uses counsel-ag to search in project by default or whole if not.
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(declare-function projectile-project-p "projectile.el")
+(declare-function projectile-project-root "projectile.el")
+(defun my/git-ag (&optional initial-input)
+  "Search with ag on the git root if possible"
+  (interactive)
+  (when (fboundp 'counsel-ag) (counsel-ag initial-input
+    (when (projectile-project-p) (projectile-project-root)))))
+#+END_SRC

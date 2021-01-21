@@ -3,3 +3,9 @@ straight/
 packages/
 *.elc
 layers/**/*.el
+#.*
+*.eln
+tmp/
+*~
+~#
+*#
