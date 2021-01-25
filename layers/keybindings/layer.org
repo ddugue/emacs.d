@@ -87,6 +87,8 @@ we can use something like this:
    "f"  '(:ignore t :which-key "Files")
    "ff" (if (tron/has-layer-p 'ivy) 'counsel-find-file 'find-file)
    "fl" (if (tron/has-layer-p 'ivy) 'counsel-locate 'locate)
+   "fr" (if (tron/has-layer-p 'ivy) 'counsel-recentf 'find-file)
+   "f!" 'spacemacs/sudo-edit
 
    ;; Inserts
    "i" '(:ignore t :which-key "Inserts")
@@ -99,6 +101,12 @@ we can use something like this:
      ;; Project
      "g"  '(:ignore t :which-key "Projects")
      "gg" 'magit-status))
+
+  (when (tron/has-layer-p 'flycheck)
+    (bind-leader
+     ;; Project
+     "e"  '(:ignore t :which-key "Errors & Compilation")
+     "ee" 'my/enable-flycheck))
   )
 
 (when (tron/has-layer-p 'ivy)
@@ -107,4 +115,5 @@ we can use something like this:
    :keymaps '(evil-normal-state-map evil-motion-state-map)
 
    "/" 'swiper))
+
 #+END_SRC

@@ -9,6 +9,7 @@
       gc-cons-threshold 402653184
       gc-cons-percentage 0.6
       auto-window-vscroll nil)
+(setq read-process-output-max (* 1024 1024))
 
 (setq user-emacs-directory (file-name-directory load-file-name))
 (setq initial-frame-alist '((name . "editor") (minibuffer . nil)))
@@ -33,12 +34,20 @@
        keybindings ;; Group all keybindings in one place
        windows ;; Windows and frame management
        scratch ;; Custom scratch buffer management
+
+       ;; Completions
+       eglot
+       ;; lsp
+
        ;; selectrum  ;; Completion framework
        ivy ;; Other completion framework
        project
+       flycheck ;; Error management. Definitely used by other modes
 
        ;; Programming languages
        elisp
+       javascript
+       python
 
        :features
        dvorak      ;; Enable dvorak remapping of some keys
@@ -54,13 +63,14 @@
   (message "Installing layers...")
   (setq comp-async-report-warnings-errors (getenv "DEBUG"))
   (setq straight-disable-byte-compilation t)
+  (setq do-not-compile '())
   (mapcar 'tron/tangle-layer (or (when layer `(,layer)) tron-layers))
   (mapcar 'tron/install-layer (or (when layer `(,layer)) (reverse tron-layers)))
   (mapcar 'tron/compile-layer (or (when layer `(,layer)) (reverse tron-layers)))
   ;; Compile straight libraries
 
   ;; block until native compilation has finished
-  (tron/compile-libraries)
+  (tron/compile-libraries do-not-compile)
   (unless (getenv "DEBUG")
     (setq warning-minimum-level :error))
 
@@ -89,13 +99,15 @@
     (add-to-list 'load-path "/home/ddugue/new-emacs/straight/build/bind-key")
     (require 'use-package)
     (require 'bind-key))
+
+  ;; (require 'tron (emacs-path "config.eln"))
   (mapcar 'tron/load-layer (or (when (getenv "COREONLY") '(core)) (reverse tron-layers)))
   (unless (getenv "NOTHEME")
     (setq custom-theme-directory (emacs-path "themes"))
     (setq custom-safe-themes t)
     (load-theme 'yesterday-glow t))
   (pop-to-buffer "*Messages*")
-  (select-frame-by-name "editor")
+  (run-with-timer 0.3 nil 'select-frame-by-name "editor")
   (message "Tron Emacs Loaded in %s (Init %s)."
            (emacs-init-time)
            (format-time-string "%S.%3N seconds" (time-subtract nil tron--start-time) t))

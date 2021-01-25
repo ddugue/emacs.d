@@ -1,0 +1,150 @@
+Eglot is an alternative to LSP-mode without a lot of LSP-mode bells and whistles.
+Of course it's entirely possible that eglot is not feature complete
+[[https://github.com/joaotavora/eglot][Project Homepage]]
+
+* Installation
+** company Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package company
+(straight-use-package 'company)
+#+END_SRC
+** eglot Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package eglot
+(straight-use-package 'eglot)
+#+END_SRC
+
+** Focus installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package eglot
+(straight-use-package 'focus)
+#+END_SRC
+* Configuration
+** Focus configuration
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package eldoc
+:init
+(setq eldoc-echo-area-prefer-doc-buffer t)
+(setq eldoc-minor-mode-string nil))
+#+END_SRC
+** Eldoc configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package focus
+  :load-path "straight/build/focus"
+  :commands (focus-mode)
+  :config
+  (add-to-list 'focus-mode-to-thing '(python-mode . paragraph))
+  (add-to-list 'focus-mode-to-thing '(js-mode . paragraph))
+)
+#+END_SRC
+
+** Company configuration
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+
+(require 'xref)
+(defun xref-pop-to-location (item &optional action)
+  "Go to the location of ITEM and display the buffer.
+ACTION controls how the buffer is displayed:
+  nil      -- switch-to-buffer
+  `window' -- pop-to-buffer (other window)
+  `frame'  -- pop-to-buffer (other frame)
+If SELECT is non-nil, select the target window."
+  (let* ((marker (save-excursion
+                   (xref-location-marker (xref-item-location item))))
+         (buf (marker-buffer marker))
+         (clone (format "*%s*" (buffer-name buf))))
+    (message "Buf is %s marker is %s" buf marker)
+    (cl-ecase action
+      ((nil)  (progn
+                (switch-to-buffer buf)
+                (xref--goto-char marker)))
+      (window (progn
+                (display-buffer-use-some-frame
+                  (or (get-buffer clone) (make-indirect-buffer buf clone t))
+                  '((frame-predicate . my/matchframe) (inhibit-switch-frame . t)))
+                (set-window-point (get-buffer-window clone t) marker)
+                (with-current-buffer clone
+                  (focus-mode 1)
+                  (display-line-numbers-mode 0)
+                  (read-only-mode 1)
+                  (focus-move-focus)
+                  (when (equal clone "*index.d.ts*") (setq focus-current-thing 'line))
+                )
+                (run-at-time 0.2 nil `(lambda () (with-current-buffer ,clone (focus-move-focus))))
+                ))
+      (frame  (let ((pop-up-frames t)) (pop-to-buffer buf t))))
+    )
+  (let ((xref--current-item item))
+    (run-hooks 'xref-after-jump-hook)))
+
+(defun my/max-candidate-length (candidates)
+  (-reduce-from (lambda (acc it) (max acc (length it))) 15 candidates))
+(defconst my--kind-names
+  `((1 . "Text") (2 . "Meth") (3 . "Func") (4 . "New.")
+    (5 . "Fld.") (6 . "Var ") (7 . "Clss") (8 . "Inte")
+    (9 . "Mod.") (10 . "Prop") (11 . "Unit") (12 . "Val.")
+    (13 . "Enum") (14 . "Keyw") (15 . "Snip") (16 . "Colo")
+    (17 . "File") (18 . "Ref.")))
+
+(defun my/extract-symbol (s)
+(let ((kind (plist-get (get-text-property 0 'eglot--lsp-item s) :kind)))
+      (cdr (assoc kind my--kind-names))))
+
+(defun my/format-candidate (s)
+ (let* ((symbol (or (my/extract-symbol s) "____"))
+        (msg (concat
+              (format "[%s] " symbol)
+              (when company-prefix (propertize company-prefix 'face 'ivy-minibuffer-match-face-2))
+              (s-pad-right (- (1+ (my/max-candidate-length company-candidates)) (length company-prefix))
+                " "
+                (s-chop-prefix company-prefix s))
+              (let ((text (s-truncate 50 (get-text-property 0 :description s))))
+              (when text (propertize text 'face 'minibuffer-prompt)))
+              "\n")))
+   (when (equal (nth company-selection company-candidates) s)
+       (add-face-text-property 0 (length msg) 'highlight t msg)
+   )
+   msg))
+
+(defun start-selection ()
+  (message (mapconcat 'my/format-candidate company-candidates ""))
+)
+
+(defun hide-ivy ()
+  (message "")
+)
+(defun counsel-company-frontend (command)
+  (pcase command
+    (`post-command (start-selection))
+    (`pre-command (start-selection))
+    (`hide (hide-ivy))))
+
+(use-package company
+  :load-path ("straight/build/company" "straight/build/dash")
+  :commands (company-mode)
+  :bind
+  (:map company-active-map
+    ("C-h" . company-select-previous)
+    ("C-t" . company-select-next))
+  :config
+  ;; (setq company-idle-delay .1)
+  ;; (setq company-minimum-prefix-length 3)
+  (require 'dash)
+  (setq company-abort-manual-when-too-short t)
+  (setq company-frontends '(company-preview-frontend counsel-company-frontend))
+  (setq company-require-match 'never))
+#+END_SRC
+** eglot Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package eglot
+  :load-path "straight/build/eglot"
+  :init
+  (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
+  :config
+  ;; (map-put eglot-server-programs '(js-mode js2-mode rjsx-mode) '("flow" "lsp" "--lazy" "--lazy-mode=ide"))
+  (map-put eglot-server-programs '(js-mode js2-mode rjsx-mode) '("typescript-language-server" "--stdio"))
+  (setq eglot-stay-out-of '(flymake eldoc))
+)
+#+END_SRC

@@ -23,7 +23,6 @@ Right now the way that this layer is built is we allow ONE type of completion en
 (straight-use-package 'counsel)
 #+END_SRC
 
-
 * Configuration
 ** Functions
 *** Custom IVY hydra
@@ -96,17 +95,36 @@ We configure and install ivy, which is the Engine
 
 #+END_SRC
 
+*** Custom FNS for counsel
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun my/counsel--recentf-function (files)
+  "Format FILES by replaceing home by ~."
+  (let ((formatter
+         (lambda (file)
+           (s-replace "/home/ddugue" "~" file))))
+    (ivy--format-function-generic
+     (lambda (file)
+       (funcall formatter (ivy--add-face file 'ivy-current-match)))
+     formatter files "\n")))
+#+END_SRC
+
 *** Installation & Configuration of Counsel
 We install and configure counsel, which uses ivy and provides some nice default funcions
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (use-package counsel
-  :load-path ("straight/build/counsel" "straight/build/swiper")
-  :commands (counsel-find-file counse-locate counsel-describe-function counsel-describe-variable counsel-describe-face counsel-ag counsel-M-x swiper)
-:init
-
+  :load-path ("straight/build/counsel" "straight/build/swiper" "straight/build/s")
+  :commands (counsel-find-file
+             counsel-locate
+             counsel-describe-function
+             counsel-describe-variable
+             counsel-describe-face
+             counsel-ag
+             counsel-M-x
+             swiper
+             counsel-recentf)
   :config
-    (setq counsel-find-file-ignore-regexp
+  (setq counsel-find-file-ignore-regexp
         (concat
          ;; File names beginning with # or .
          "\\(?:\\`[#.]\\)"
@@ -119,5 +137,9 @@ We install and configure counsel, which uses ivy and provides some nice default 
          ;; File names ending in .eln
          "\\|\\(?:\\`.+?\\.eln\\'\\)"
          ))
-)
+
+  (require 's)
+  (ivy-configure 'counsel-recentf
+    :format-fn #'my/counsel--recentf-function)
+  )
 #+END_SRC

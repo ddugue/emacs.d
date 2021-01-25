@@ -1,0 +1,50 @@
+This layer concern everything Javascript related
+
+* Installation
+** javascript Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package javascript
+;; (straight-use-package 'javascript)
+#+END_SRC
+
+* Configuration
+** Eslint auto-format
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun my/eslint-format ()
+  (interactive)
+  (save-excursion
+    (let ((cmd (if (projectile-project-p)
+           (concat (projectile-project-root) "node_modules/eslint/bin/eslint.js")
+           (if (executable-find "eslint") "eslint" (user-error "No eslint on the system"))
+           )))
+      (save-buffer)
+      (call-process cmd nil "*ESLint Errors*" nil "--fix" buffer-file-name)
+      (revert-buffer t t)
+      (when (bound-and-true-p flymake-mode)
+        (flycheck-list-errors))
+)))
+#+END_SRC
+** javascript Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package js
+  :init
+  (add-hook 'js-mode-hook (lambda ()
+    (make-variable-buffer-local 'tab-width)
+    (setq tab-width 2)
+    (bind-local "r" 'my/eslint-format)
+    (bind-local "h" 'xref-find-definitions-other-window)
+    (when (tron/has-layer-p 'eglot)
+      (company-mode 1)
+      (call-interactively 'eglot))
+
+    (general-define-key
+      :keymaps 'js-mode-map
+      :states '(motion)
+      "g." 'xref-find-definitions
+      "g," 'xref-pop-marker-stack)
+  ))
+  :config
+  (setq js-chain-indent t)
+  (setq js-indent-level 2))
+#+END_SRC

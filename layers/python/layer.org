@@ -1,0 +1,33 @@
+This is the layer header. Please change text here to explain what it should do.
+[[<URI>][Project Homepage] ]
+
+* Installation
+** python Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package python
+;; (straight-use-package 'python)
+#+END_SRC
+
+* Configuration
+** python Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package python
+  :init
+  (add-hook 'python-mode-hook (lambda ()
+    ;; (require 'pkg-info)
+    ;; (make-variable-buffer-local 'tab-width)
+    ;; (setq tab-width 2)
+    (bind-local "r" 'my/eslint-format)
+    (bind-local "h" 'xref-find-definitions-other-window)
+    (when (tron/has-layer-p 'eglot)
+      (company-mode 1)
+      (call-interactively 'eglot))
+
+    (general-define-key
+      :keymaps 'python-mode-map
+      :states '(motion)
+      "g." 'xref-find-definitions
+      "g," 'xref-pop-marker-stack)
+  ))
+)
+#+END_SRC

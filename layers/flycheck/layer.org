@@ -1,0 +1,101 @@
+This layer manages Flycheck itself. Mode should use the feature flag then.
+[[https://www.flycheck.org/en/latest/][Project Homepage]]
+
+* Installation
+** Compilation
+We add some no compile for some files
+#+BEGIN_SRC emacs-lisp :tangle install.el
+(add-to-list 'do-not-compile "flycheck-buttercup.el")
+#+END_SRC
+** Flycheck Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package flycheck
+(straight-use-package 'flycheck)
+#+END_SRC
+
+* Configuration
+
+** Overrides some functions of flycheck for a smaller display
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun my/override-flycheck-fn ()
+(defconst flycheck-error-list-format
+  `[("Line" 4 flycheck-error-list-entry-< :right-align t)
+    ("ID" 15 t)
+    (,(flycheck-error-list-make-last-column "Message" 'Checker) 0 t)]
+  "Table format for the error list.")
+
+(defun flycheck-error-list-make-entry (error)
+  "Make a table cell for the given ERROR.
+Return a list with the contents of the table cell."
+  (let* ((level (flycheck-error-level error))
+         (level-face (flycheck-error-level-error-list-face level))
+         (line (flycheck-error-line error))
+         (column (flycheck-error-column error))
+         (message (or (flycheck-error-message error)
+                      (format "Unknown %s" (symbol-name level))))
+         (flushed-msg (flycheck-flush-multiline-message message))
+         (id (flycheck-error-id error))
+         (id-str (if id (format "%s" id) ""))
+         (checker (flycheck-error-checker error))
+         (msg-and-checker (flycheck-error-list-make-last-column flushed-msg checker))
+         (explainer (flycheck-checker-get checker 'error-explainer)))
+    (list error
+          (vector (flycheck-error-list-make-number-cell
+                   line level-face)
+                  ;; Error ID use a different face when an error-explainer is present
+                  (flycheck-error-list-make-cell
+                   id-str (if explainer 'flycheck-error-list-id-with-explainer
+                            'flycheck-error-list-id)
+                   id-str 'flycheck-error-list-explain-error)
+                  (flycheck-error-list-make-cell
+                   msg-and-checker nil msg-and-checker))))))
+#+END_SRC
+** Installs & configure flycheck
+Flycheck is the best package (compared to flymake) for syntax checking.
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package flycheck
+  :commands (flycheck-mode flycheck-add-mode)
+  :load-path ("straight/build/flycheck" "straight/build/pkg-info")
+  :init
+  (setq-default flycheck-disabled-checkers '(javascript-jshint))
+  :config
+  (my/override-flycheck-fn)
+  (setq flycheck-check-syntax-automatically '(save new-line idle-change mode-enabled))
+  (setq flycheck-display-errors-delay 30)
+
+  (when (tron/has-feature-p 'dvorak)
+    (general-define-key
+     :keymaps 'flycheck-error-list-mode-map
+     "t" 'flycheck-error-list-next-error
+     "h" 'flycheck-error-list-previous-error)
+    )
+
+  (unless (tron/has-feature-p 'dvorak)
+    (general-define-key
+     :keymaps 'flycheck-error-list-mode-map
+     "j" 'flycheck-error-list-next-error
+     "k" 'flycheck-error-list-previous-error)
+    )
+;; (flycheck-add-next-checker 'python-flake8 'python-pylint)
+;; (flycheck-elm-setup)
+)
+
+#+END_SRC
+** Toggle Flycheck
+Function to toggle flycheck mode
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+;; TODO: Make this a toggle
+(defun my/enable-flycheck ()
+  (interactive)
+  (let ((buf (current-buffer)))
+    (message "%s" buf)
+    (flycheck-mode t)
+    (general-define-key
+     :keymaps 'local
+     :states '(normal)
+     "gn" 'flycheck-next-error)
+    (flycheck-list-errors)
+    (select-frame-by-name "editor")))
+#+END_SRC

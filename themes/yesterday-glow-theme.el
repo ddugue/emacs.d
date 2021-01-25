@@ -127,6 +127,8 @@
    `(font-lock-variable-name-face ((,class (:foreground ,var))))
    `(font-lock-warning-face ((,class (:foreground ,war :background ,background))))
 
+   ;; Eglot
+   `(eglot-highlight-symbol-face ((,class (:foreground ,yellow :underline t))))
    ;; Selectrum
    `(selectrum-primary-highlight ((,class (:foreground ,yellow :underline t))))
    ;; Ivy
@@ -151,8 +153,9 @@
    `(flycheck-fringe-warning ((,class (:foreground ,war :inherit bold))))
    `(flycheck-fringe-info ((,class (:foreground ,blue :inherit bold))))
    `(flycheck-error-list-error ((,class (:foreground ,err :inherit bold))))
-   `(flycheck-error-list-warning ((,class (:foreground ,war :inherit bold))))
+   `(flycheck-error-list-warning ((,class (:foreground ,light-orange :inherit bold))))
    `(flycheck-error-list-info ((,class (:foreground ,blue :inherit bold))))
+   `(flycheck-error-list-id-with-explainer ((,class (:foreground ,blue :box nil :inherit bold))))
 
    ;; Highlight indentation mode
    `(highlight-indentation-face ((,class (:background ,even-less-dark))))

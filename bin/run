@@ -5,6 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR/..
 mkdir -p tmp
 xrdb -merge etc/.Xresources
-i3-msg "workspace 1; append_layout /home/ddugue/.i3/workspace-1.json"
+# emacs -q --no-site-file --no-splash --eval "(kill-emacs)"
 emacs -q --no-site-file --no-splash -l init.el &
 echo $! > tmp/process.pid
+i3-msg "workspace 1; append_layout /home/ddugue/.i3/workspace-1.json"

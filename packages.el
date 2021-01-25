@@ -191,13 +191,16 @@
   (let ((split-path (split-string str "/")))
     (car (last split-path))))
 
-(defun tron/compile-libraries ()
+(defun tron/compile-libraries (do-not-compile)
+  (native-compile (concat user-emacs-directory "themes/yesterday-glow-theme.el") (concat user-emacs-directory "themes/yesterday-glow-theme.eln"))
+  ;; (native-compile (concat user-emacs-directory "config.el") (concat user-emacs-directory "config.eln"))
   (native-compile-async (tron/package-folder) 'recursively nil
                         (lambda (f)
                           (let* ((folder (string-remove-prefix (tron/package-folder) f))
                                  (filename (tron/get-filename folder)))
                             (if
                                 (or
+                                 (cl-some `(lambda (ex) (string-match-p ex ,filename)) do-not-compile)
                                  (string= ".dirs-locals.el" filename)
                                  (string-suffix-p "autoloads.el" filename))
                                 (progn

@@ -20,6 +20,7 @@ More often than not we want to close those nasty popups and go back to work!
 
 (general-define-key
   :states '(normal)
+  "<C-escape>" 'kill-buffer-and-window
   "TAB" 'other-window)
 #+END_SRC
 
@@ -34,7 +35,7 @@ README: I've moved this to the early-init.el in order to avoid flash of the GUI.
 ** One per frame configuration Configuration
 We want to ensure that some buffer spawns in a dedicated 'info' frame
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(defconst info-buffers '("^\\*[mM]essages.*$" "^\\*[hH]elp.*$" "^\\*[mM]agit.*$" "^\\*[Ff]lycheck.*$" "^\\*lsp-help.*$"))
+(defconst info-buffers '("^\\*[mM]essages.*$" "^\\*[hH]elp.*$" "^\\*[mM]agit.*$" "^\\*[Ff]lycheck.*$" "^\\*lsp-help.*$" "^\\*eldoc*$"))
 (defun my/switch-to-buffer (buffer-or-name)
   "Switch to a different buffer"
   (interactive "BSwitch to buffer: ")

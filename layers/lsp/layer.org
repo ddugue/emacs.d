@@ -1,0 +1,40 @@
+This is the package that brings many languages analysis platform to emacs.
+It is a heavy package, but OH so useful.
+[[https://emacs-lsp.github.io/][Project Homepage]]
+
+* Installation
+** lsp Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package lsp
+(straight-use-package 'lsp-mode)
+#+END_SRC
+
+* Configuration
+** lsp Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package lsp-mode
+  :load-path ("straight/build/lsp-mode"
+              "straight/build/dash-functional"
+              "straight/build/f"
+              "straight/build/s"
+              "straight/build/ht"
+              "straight/build/lv"
+              "straight/build/markdown-mode"
+              "straight/build/spinner")
+ :commands (lsp)
+:config
+(setq lsp-enable-snippet nil)
+(setq lsp-modeline-workspace-status-enable nil)
+(setq lsp-modeline-diagnostics-enable nil)
+(setq lsp-modeline-code-actions-enable nil)
+(setq lsp-headerline-breadcrumb-enable nil)
+(setq lsp-lens-enable nil)
+(setq lsp-semantic-tokens-enable nil)
+)
+
+
+;; (when (tron/has-layer-p 'ivy)
+;; (use-package lsp-ivy
+;;   :load-path "straight/build/lsp-mode"
+;;   :commands lsp-ivy-workspace-symbol))
+#+END_SRC

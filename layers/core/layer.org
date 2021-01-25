@@ -79,9 +79,10 @@ be loaded all the time.
 #+END_SRC
 **** Show line numbers
 #+BEGIN_SRC emacs-lisp :tangle config.el
-  (setq display-line-numbers-type 'relative)
-  (setq display-line-numbers-current-absolute t)
-  (global-display-line-numbers-mode t)
+(setq display-line-numbers-type 'relative)
+(setq display-line-numbers-current-absolute t)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+;; (global-display-line-numbers-mode t)
 
 #+END_SRC
 
@@ -116,10 +117,22 @@ We wanna change the default location of temporary files to a temporary directory
           `((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
           `((".*" ,temporary-file-directory t)))
+(setq auto-save-no-message t)
 #+END_SRC
 ** Change yes or no to y or n
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (fset 'yes-or-no-p 'y-or-n-p) ;; Yes or no questions become Y or n questions
+#+END_SRC
+** Editing preferences
+
+*** Tabs
+Describes how tabification work. Normally we want tabs to equal 4 spaces
+and except on rare cases, tabs should be representend as spaces for
+MANY reasons. Check the flame ware online
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(setq-default tab-width 4)
+(setq-default indent-tabs-mode nil)
 #+END_SRC
 ** Evil
 We want to enable evil globally
@@ -139,6 +152,9 @@ We want to enable evil globally
   (define-key evil-motion-state-map "zz" nil)
   (define-key evil-motion-state-map "za" nil)
   (define-key evil-normal-state-map (kbd "g,") nil)
+
+(evil-set-initial-state 'xref-mode 'emacs)
+(evil-set-initial-state 'xref--xref-buffer-mode 'emacs)
 
   (when (tron/has-feature-p 'dvorak)
     (define-key evil-motion-state-map "h" 'evil-previous-line)
@@ -169,7 +185,9 @@ We want to enable evil globally
 
 *** Evil commentary
 #+BEGIN_SRC emacs-lisp :tangle config.el
-(use-package evil-commentary :commands (evil-commentary))
+(use-package evil-commentary
+ :load-path "straight/build/evil-commentary"
+ :commands (evil-commentary))
 #+END_SRC
 
 ** Key-Chord
@@ -194,4 +212,36 @@ Key chord is an extension to create two key strokes shortcut. Quite useful.
     (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
     (key-chord-define evil-replace-state-map "jk" 'evil-normal-state))
   )
+#+END_SRC
+** Open file in sudo
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun spacemacs/sudo-edit (&optional arg)
+  "Open file in sudo mode"
+  (interactive "p")
+  (let ((fname (if (or arg (not buffer-file-name))
+                   (read-file-name "File: ")
+                 buffer-file-name)))
+    (find-file
+     (cond ((string-match-p "^/ssh:" fname)
+            (with-temp-buffer
+              (insert fname)
+              (search-backward ":")
+              (let ((last-match-end nil)
+                    (last-ssh-hostname nil))
+                (while (string-match "@\\\([^:|]+\\\)" fname last-match-end)
+                  (setq last-ssh-hostname (or (match-string 1 fname)
+                                              last-ssh-hostname))
+                  (setq last-match-end (match-end 0)))
+                (insert (format "|sudo:%s" (or last-ssh-hostname "localhost"))))
+              (buffer-string)))
+           (t (concat "/sudo:root@localhost:" fname))))))
+#+END_SRC
+** Recent files
+Saves the recent files list in order to retrieve fiels that were last opened.
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(recentf-mode 1)
+(setq recentf-max-menu-items 25)
+(setq recentf-max-saved-items 25)
+(run-at-time nil (* 5 60) 'recentf-save-list)
 #+END_SRC
