@@ -47,7 +47,12 @@
        ;; Programming languages
        elisp
        javascript
+       typescript
        python
+
+       ;; Applications
+       org
+       ledger
 
        :features
        dvorak      ;; Enable dvorak remapping of some keys

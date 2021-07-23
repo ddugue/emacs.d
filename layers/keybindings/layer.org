@@ -58,6 +58,15 @@ we can use something like this:
   :non-normal-prefix non-evil-mode-leader-key)
 #+END_SRC
 
+** Utility functions
+Small utility functions not tied to any other modes
+
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun my/open-config ()
+    "Open emacs config"
+    (interactive)
+    (find-file "~/new-emacs/init.el"))
+#+END_SRC
 ** keybindings Configuration
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (use-package which-key
@@ -90,9 +99,16 @@ we can use something like this:
    "fr" (if (tron/has-layer-p 'ivy) 'counsel-recentf 'find-file)
    "f!" 'spacemacs/sudo-edit
 
+   "E"  '(:ignore t :which-key "Editor")
+   "Ef"  '("Open init.el" . my/open-config)
+
+
    ;; Inserts
    "i" '(:ignore t :which-key "Inserts")
    "ic" 'insert-char
+
+   ;; Toggles
+   "t" '(:ignore t :which-key "Toggles")
 
    "/" 'my/git-ag) ;; Search
 
@@ -101,6 +117,10 @@ we can use something like this:
      ;; Project
      "g"  '(:ignore t :which-key "Projects")
      "gg" 'magit-status))
+
+  (when (tron/has-layer-p 'eglot)
+    (bind-leader
+     "tc" 'eglot))
 
   (when (tron/has-layer-p 'flycheck)
     (bind-leader

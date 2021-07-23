@@ -154,6 +154,7 @@ We want to enable evil globally
   (define-key evil-normal-state-map (kbd "g,") nil)
 
 (evil-set-initial-state 'xref-mode 'emacs)
+(evil-set-initial-state 'ledger-report-mode 'emacs)
 (evil-set-initial-state 'xref--xref-buffer-mode 'emacs)
 
   (when (tron/has-feature-p 'dvorak)

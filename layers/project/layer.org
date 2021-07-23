@@ -21,7 +21,7 @@ Magit is one of the best thing about emacs. It is such a nice interface to Git.
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (use-package projectile
   :load-path "straight/build/projectile"
-  :commands (projectile-project-p))
+  :commands (projectile-project-p projectile-project-root))
 #+END_SRC
 
 ** Git configuration
@@ -115,4 +115,26 @@ Uses counsel-ag to search in project by default or whole if not.
   (interactive)
   (when (fboundp 'counsel-ag) (counsel-ag initial-input
     (when (projectile-project-p) (projectile-project-root)))))
+#+END_SRC
+
+** Smerge mode (for merging)
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package smerge-mode
+  :init
+  (add-hook 'smerge-mode-hook (lambda ()
+    (bind-local "RET" 'smerge-keep-current)
+    (bind-local "a" 'smerge-keep-all)
+    (bind-local "ko" 'smerge-keep-other)
+    (bind-local "kb" 'smerge-keep-base)
+    (bind-local "ka" 'smerge-keep-all)
+    (bind-local "r" 'smerge-resolve)
+    (bind-local "n" 'smerge-next)
+
+    (general-define-key
+      :keymaps 'smerge-mode-map
+      :states '(motion)
+      "g." 'smerge-next
+      "g," 'smerge-prev)
+  ))
+)
 #+END_SRC

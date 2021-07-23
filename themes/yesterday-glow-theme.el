@@ -55,6 +55,10 @@
        (comp purple)
        (war yellow))
 
+  (custom-theme-set-variables
+   'yesterday-glow
+   `(ansi-color-names-vector [,background ,red ,lime ,yellow ,blue ,purple ,teal ,foreground]))
+
   (custom-theme-set-faces
    'yesterday-glow
 

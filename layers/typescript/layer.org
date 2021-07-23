@@ -1,0 +1,61 @@
+Simple mode for Typescript that supports
+[[<URI>][Project Homepage] ]
+
+* Installation
+** typescript Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package typescript
+;; (straight-use-package web-mode)
+#+END_SRC
+
+* Configuration
+** typescript Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+
+(require 'ansi-color)
+;; (defun colorize-compilation-buffer ()
+;;   (toggle-read-only)
+;;   (ansi-color-apply-on-region compilation-filter-start (point))
+;;   (toggle-read-only))
+
+(defun my/compile-tsx ()
+  "Compile file with tsc"
+  (interactive)
+  (compile (concat "tsc --noEmit --jsx preserve " (buffer-file-name)) t))
+
+(defun my/tsx-setup ()
+
+  (setq-local flycheck-relevant-error-other-file-show nil)
+  (flycheck-add-mode 'javascript-eslint 'typescript-tsx-mode)
+  ;; (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+  (message "Hey Listen!"))
+
+(progn
+  (define-derived-mode typescript-tsx-mode js-mode "TypeScript[tsx]")
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-tsx-mode))
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-tsx-mode))
+  (font-lock-add-keywords 'typescript-tsx-mode
+                          '(("type " . font-lock-keyword-face)
+                            ("interface " . font-lock-keyword-face)
+                            ("as " . font-lock-keyword-face)
+                            ("from " . font-lock-keyword-face)
+                            ("readonly" . font-lock-keyword-face)
+                            ("number" . font-lock-type-face)
+                            ("string" . font-lock-type-face)
+                            ("any" . font-lock-type-face)
+))
+
+  (add-hook 'typescript-tsx-mode-hook 'my/tsx-setup))
+
+;; (use-package typescript-tsx-mode
+;;   :mode ("\\.tsx\\'" . typescript-tsx-mode)
+;;   :config
+;;
+
+;; (setq js--basic-type-re
+;;   (js--regexp-opt-symbol
+;;    '("boolean" "byte" "char" "double" "float" "int" "long"
+;;      "short" "void"))
+;;   "Regular expression matching any predefined type in JavaScript.")
+;; )
+#+END_SRC

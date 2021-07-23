@@ -19,9 +19,6 @@ This is the layer header. Please change text here to explain what it should do.
     ;; (setq tab-width 2)
     (bind-local "r" 'my/eslint-format)
     (bind-local "h" 'xref-find-definitions-other-window)
-    (when (tron/has-layer-p 'eglot)
-      (company-mode 1)
-      (call-interactively 'eglot))
 
     (general-define-key
       :keymaps 'python-mode-map

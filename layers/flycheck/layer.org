@@ -56,10 +56,12 @@ Flycheck is the best package (compared to flymake) for syntax checking.
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (use-package flycheck
   :commands (flycheck-mode flycheck-add-mode)
-  :load-path ("straight/build/flycheck" "straight/build/pkg-info")
+  :load-path ("straight/build/flycheck" "straight/build/pkg-info" "straight/build/epl")
   :init
   (setq-default flycheck-disabled-checkers '(javascript-jshint))
   :config
+
+  (require 'pkg-info)
   (my/override-flycheck-fn)
   (setq flycheck-check-syntax-automatically '(save new-line idle-change mode-enabled))
   (setq flycheck-display-errors-delay 30)
@@ -77,9 +79,25 @@ Flycheck is the best package (compared to flymake) for syntax checking.
      "j" 'flycheck-error-list-next-error
      "k" 'flycheck-error-list-previous-error)
     )
-;; (flycheck-add-next-checker 'python-flake8 'python-pylint)
-;; (flycheck-elm-setup)
+
+
+  (when (tron/has-layer-p 'typescript)
+  (flycheck-define-checker tsc
+    "A TypeScript syntax checker using tsc command."
+    :command ("tsc" "-p" (eval (projectile-project-root)) "--pretty" "false")
+    :error-patterns
+    ((error line-start (file-name) "(" line "," column "): error " (id (one-or-more (not ":"))) ": "
+          (message (one-or-more not-newline)
+                   (zero-or-more "\n\t" (one-or-more not-newline)))
+            line-end))
+    :modes typescript-tsx-mode
 )
+(flycheck-add-next-checker 'tsc '(t . javascript-eslint))
+(add-to-list 'flycheck-checkers 'tsc)
+)
+
+  ;; (flycheck-elm-setup)
+  )
 
 #+END_SRC
 ** Toggle Flycheck

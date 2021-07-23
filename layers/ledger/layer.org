@@ -1,0 +1,39 @@
+Ledger mode provide a way to edit ledger files. Ledger files are for accounting.
+[[https://github.com/ledger/ledger-mode][Project Homepage]]
+
+
+You can find information on Ledger here:
+[[https://github.com/ledger/ledger]]
+
+* Installation
+** ledger Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package ledger
+(straight-use-package 'ledger-mode)
+#+END_SRC
+
+* Configuration
+** ledger Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(defun my/balance-report ()
+  "Make the balance report appear for current buffer"
+  (interactive)
+  (ledger-report "bal" nil))
+  
+(use-package ledger-mode
+  :load-path "straight/build/ledger-mode"
+  :mode ("\\.dat\\'" . ledger-mode)
+  :init
+  (add-hook 'ledger-mode-hook (lambda ()
+    (bind-local "=" 'ledger-mode-clean-buffer)
+    (bind-local "b" 'my/balance-report)
+    
+    (when (tron/has-feature-p 'dvorak)
+    (define-key ledger-report-mode-map "h" 'evil-previous-line)
+    (define-key ledger-report-mode-map "t" 'evil-next-line)
+    (define-key ledger-report-mode-map "n" 'evil-backward-char)
+    (define-key ledger-report-mode-map "s" 'evil-forward-char))
+    ))
+  )
+#+END_SRC
+

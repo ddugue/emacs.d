@@ -34,9 +34,6 @@ This layer concern everything Javascript related
     (setq tab-width 2)
     (bind-local "r" 'my/eslint-format)
     (bind-local "h" 'xref-find-definitions-other-window)
-    (when (tron/has-layer-p 'eglot)
-      (company-mode 1)
-      (call-interactively 'eglot))
 
     (general-define-key
       :keymaps 'js-mode-map
