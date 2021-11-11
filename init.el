@@ -1,7 +1,22 @@
 ;;; -*- lexical-binding: t -*-
 ;; Init.el starts here
 ;; Those things are a few tricks to make everything load faster
+(defvar bootstrap-version)
+(setq user-emacs-directory (file-name-directory load-file-name))
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 (defvar file-name-handler-alist-old file-name-handler-alist)
+(defvar comp-deferred-compilation-deny-list ())
+(setq straight-disable-native-compile t)
 
 (setq package-enable-at-startup nil
       file-name-handler-alist nil
@@ -11,7 +26,6 @@
       auto-window-vscroll nil)
 (setq read-process-output-max (* 1024 1024))
 
-(setq user-emacs-directory (file-name-directory load-file-name))
 (setq initial-frame-alist '((name . "editor") (minibuffer . nil)))
 (add-to-list 'default-frame-alist '(minibuffer . nil))
 

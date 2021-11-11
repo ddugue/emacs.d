@@ -25,10 +25,16 @@ Represent a layer to edit ELisp
 
 ** Matching parentheses
 #+BEGIN_SRC emacs-lisp :tangle config.el
+  (defun my/inhibit-electric-pair-mode (char)
+    "Inihibit electric pair-mode when in minibuffer"
+    (minibufferp))
+    
   (use-package elec-pair
     :hook (emacs-lisp-mode . electric-pair-mode)
     :config
-    (setq electric-pair-delete-adjacent-pairs nil))
+    (setq electric-pair-delete-adjacent-pairs nil)
+    (setq electric-pair-inhibit-predicate #'my/inhibit-electric-pair-mode)
+    )
 #+END_SRC
 
 ** elisp Configuration

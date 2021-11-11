@@ -5,7 +5,7 @@ Simple mode for Typescript that supports
 ** typescript Installation
 #+BEGIN_SRC emacs-lisp :tangle install.el
 ;; Install package typescript
-;; (straight-use-package web-mode)
+(straight-use-package 'typescript-mode)
 #+END_SRC
 
 * Configuration
@@ -13,39 +13,82 @@ Simple mode for Typescript that supports
 #+BEGIN_SRC emacs-lisp :tangle config.el
 
 (require 'ansi-color)
+
+(use-package tree-sitter
+  :load-path ("straight/build/tree-sitter" "straight/build/tsc" "straight/build/tree-sitter-langs")
+  ;; :after tree-sitter-langs
+  :commands (tree-sitter-mode))
+  ;; :hook
+  ;; (eglot--managed-mode . (lambda ()
+  ;;                (tree-sitter-mode)
+  ;;                (tree-sitter-hl-mode))))
+
+(use-package tree-sitter-langs
+  :load-path ("straight/build/tree-sitter" "straight/build/tsc" "straight/build/tree-sitter-langs")
+  :config
+  (tree-sitter-require 'tsx)
+  (add-to-list 'tree-sitter-major-mode-language-alist '(typescript-tsx-mode . tsx)))
+
+  
+(use-package typescript-mode
+  :load-path ("straight/build/typescript-mode")
+  :mode "\\.ts\\'"
+  :config
+  (setq typescript-indent-level 2)
+  :init
+  (define-derived-mode typescript-tsx-mode typescript-mode "TypeScript[tsx]")
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-tsx-mode))
+  (add-hook 'typescript-tsx-mode-hook (lambda ()
+                                        (tree-sitter-mode)
+                                        (tree-sitter-hl-mode)))
+  )
+
+
 ;; (defun colorize-compilation-buffer ()
 ;;   (toggle-read-only)
 ;;   (ansi-color-apply-on-region compilation-filter-start (point))
 ;;   (toggle-read-only))
 
-(defun my/compile-tsx ()
-  "Compile file with tsc"
-  (interactive)
-  (compile (concat "tsc --noEmit --jsx preserve " (buffer-file-name)) t))
+;; (defun my/compile-tsx ()
+;;   "Compile file with tsc"
+;;   (interactive)
+;;   (compile (concat "tsc --noEmit --jsx preserve " (buffer-file-name)) t))
 
-(defun my/tsx-setup ()
+;; (defun my/tsx-setup ()
 
-  (setq-local flycheck-relevant-error-other-file-show nil)
-  (flycheck-add-mode 'javascript-eslint 'typescript-tsx-mode)
-  ;; (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
-  (message "Hey Listen!"))
+;;   (setq-local flycheck-relevant-error-other-file-show nil)
+;;   (flycheck-add-mode 'javascript-eslint 'typescript-tsx-mode)
+;;   ;; (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+  
+;;     (when (tron/has-layer-p 'eglot)
+;;         (eglot-ensure)
+;;         (company-mode)
+;;         (eldoc-doc-buffer)
+;;         (select-frame-by-name "editor"))
+        
+;;     (general-define-key
+;;       :keymaps typescript-tsx-mode-map
+;;       :states '(motion)
+;;       "g." 'xref-find-definitions
+;;       "g," 'xref-pop-marker-stack)
+;;   (message "Hey Listen!"))
 
-(progn
-  (define-derived-mode typescript-tsx-mode js-mode "TypeScript[tsx]")
-  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-tsx-mode))
-  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-tsx-mode))
-  (font-lock-add-keywords 'typescript-tsx-mode
-                          '(("type " . font-lock-keyword-face)
-                            ("interface " . font-lock-keyword-face)
-                            ("as " . font-lock-keyword-face)
-                            ("from " . font-lock-keyword-face)
-                            ("readonly" . font-lock-keyword-face)
-                            ("number" . font-lock-type-face)
-                            ("string" . font-lock-type-face)
-                            ("any" . font-lock-type-face)
-))
+;; (progn
+;;   (define-derived-mode typescript-tsx-mode js-mode "TypeScript[tsx]")
+;;   (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-tsx-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-tsx-mode))
+;;   (font-lock-add-keywords 'typescript-tsx-mode
+;;                           '(("type " . font-lock-keyword-face)
+;;                             ("interface " . font-lock-keyword-face)
+;;                             ("as " . font-lock-keyword-face)
+;;                             ("from " . font-lock-keyword-face)
+;;                             ("readonly" . font-lock-keyword-face)
+;;                             ("number" . font-lock-type-face)
+;;                             ("string" . font-lock-type-face)
+;;                             ("any" . font-lock-type-face)
+;; ))
 
-  (add-hook 'typescript-tsx-mode-hook 'my/tsx-setup))
+;;   (add-hook 'typescript-tsx-mode-hook 'my/tsx-setup))
 
 ;; (use-package typescript-tsx-mode
 ;;   :mode ("\\.tsx\\'" . typescript-tsx-mode)

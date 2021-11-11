@@ -50,6 +50,12 @@ We also want to install key seq to get the order of the keystrokes
 ;; Install package
 (straight-use-package 'diminish)
 #+END_SRC
+** Tree Sitter
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package
+(straight-use-package 'tree-sitter)
+(straight-use-package 'tree-sitter-langs)
+#+END_SRC
 * Configuration
 Configuration file is loaded when emacs is run as an editor
 ** Librairies

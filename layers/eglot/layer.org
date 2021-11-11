@@ -14,19 +14,38 @@ Of course it's entirely possible that eglot is not feature complete
 (straight-use-package 'eglot)
 #+END_SRC
 
+** Eldoc Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package eldoc
+(straight-use-package 'eldoc)
+#+END_SRC
+
 ** Focus installation
 #+BEGIN_SRC emacs-lisp :tangle install.el
 ;; Install package eglot
 (straight-use-package 'focus)
 #+END_SRC
 * Configuration
-** Focus configuration
+** Eldoc configuration
 
 #+BEGIN_SRC emacs-lisp :tangle config.el
+(defun my/enable-eldoc ()
+  (interactive)
+  (let ((buf (current-buffer)))
+    ;; (message "%s" buf)
+    ;; (eldoc)
+    ;; (eldoc--message eldoc-last-message)
+    (eldoc-doc-buffer)
+    (select-frame-by-name "editor")))
 (use-package eldoc
+:load-path "straight/build/eldoc"
+:commands (eldoc)
 :init
 (setq eldoc-echo-area-prefer-doc-buffer t)
-(setq eldoc-minor-mode-string nil))
+(setq eldoc-minor-mode-string nil)
+:config
+(setq eldoc--doc-buffer (get-buffer-create " *eldoc*"))
+)
 #+END_SRC
 ** Eldoc configuration
 #+BEGIN_SRC emacs-lisp :tangle config.el
@@ -127,11 +146,20 @@ If SELECT is non-nil, select the target window."
   :bind
   (:map company-active-map
     ("C-h" . company-select-previous)
-    ("C-t" . company-select-next))
+    ("C-t" . company-select-next)
+    ("<tab>" . #'company-complete-selection)
+    ("TAB" . #'company-complete-selection)
+    ("<return>" . #'company-abort)
+    ("RET" . #'company-abort)
+    ("C-s" . nil)
+    ;; :filter (company-explicit-action-p)
+    ;; ("<return>" . #'company-complete-selection)
+    ;; ("RET" . #'company-complete-selection)
+    )
   :config
-  ;; (setq company-idle-delay .1)
-  ;; (setq company-minimum-prefix-length 3)
   (require 'dash)
+  (setq company-idle-delay .15)
+  (setq company-minimum-prefix-length 1)
   (setq company-abort-manual-when-too-short t)
   (setq company-frontends '(company-preview-frontend counsel-company-frontend))
   (setq company-require-match 'never))
@@ -140,12 +168,13 @@ If SELECT is non-nil, select the target window."
 #+BEGIN_SRC emacs-lisp :tangle config.el
 (use-package eglot
   :load-path "straight/build/eglot"
+  :commands (eglot eglot-ensure)
   :init
-  (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
+ (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
   :config
   ;; (map-put eglot-server-programs '(js-mode js2-mode rjsx-mode) '("flow" "lsp" "--lazy" "--lazy-mode=ide"))
   (setq eglot-autoreconnect nil)
   (map-put eglot-server-programs '(js-mode js2-mode rjsx-mode) '("typescript-language-server" "--stdio"))
-  (setq eglot-stay-out-of '(flymake eldoc))
+  (setq eglot-stay-out-of '(flymake))
 )
 #+END_SRC

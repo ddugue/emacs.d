@@ -84,6 +84,7 @@ Small utility functions not tied to any other modes
    "hf" (if (tron/has-layer-p 'ivy) 'counsel-describe-function 'describe-function)
    "hv" (if (tron/has-layer-p 'ivy) 'counsel-describe-variable 'describe-variable)
    "hF" (if (tron/has-layer-p 'ivy) 'counsel-describe-face 'describe-face)
+   "h." (when (tron/has-layer-p 'eglot) 'my/enable-eldoc)
    "ht" 'describe-text-properties
 
    "b"  '(:ignore t :which-key "Buffers")
@@ -120,7 +121,8 @@ Small utility functions not tied to any other modes
 
   (when (tron/has-layer-p 'eglot)
     (bind-leader
-     "tc" 'eglot))
+     "tl" 'eglot
+     "tc" 'company-mode))
 
   (when (tron/has-layer-p 'flycheck)
     (bind-leader
