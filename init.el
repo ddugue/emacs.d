@@ -63,6 +63,7 @@
        javascript
        typescript
        python
+       web
 
        ;; Applications
        org

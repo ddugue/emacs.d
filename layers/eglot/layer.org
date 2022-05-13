@@ -175,6 +175,7 @@ If SELECT is non-nil, select the target window."
   ;; (map-put eglot-server-programs '(js-mode js2-mode rjsx-mode) '("flow" "lsp" "--lazy" "--lazy-mode=ide"))
   (setq eglot-autoreconnect nil)
   (map-put eglot-server-programs '(js-mode js2-mode rjsx-mode) '("typescript-language-server" "--stdio"))
+  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
   (setq eglot-stay-out-of '(flymake))
 )
 #+END_SRC

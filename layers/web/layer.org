@@ -1,0 +1,27 @@
+This is the layer header. Please change text here to explain what it should do.
+[[<URI>][Project Homepage] ]
+
+* Installation
+** web Installation
+#+BEGIN_SRC emacs-lisp :tangle install.el
+;; Install package web
+(straight-use-package 'web-mode)
+#+END_SRC
+
+* Configuration
+** web Configuration
+#+BEGIN_SRC emacs-lisp :tangle config.el
+(use-package web-mode
+  :load-path "straight/build/web-mode"
+  :mode ("\\.jhtml\\'" . web-mode)
+  :init
+  (add-hook 'ledger-mode-hook (lambda ()
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-engines-alist
+      '(("django"    . "\\.jhtml\\'")
+        ("django"  . "\\.djhtml\\'"))
+)
+  ))
+  )
+#+END_SRC
+
